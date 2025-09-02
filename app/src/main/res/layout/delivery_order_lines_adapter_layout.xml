@@ -1,0 +1,788 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/size_8"
+        android:layout_marginHorizontal="@dimen/size_10"
+        app:cardCornerRadius="@dimen/size_8"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_login_background"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/size_10"
+            android:paddingHorizontal="@dimen/size_10">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <LinearLayout
+                        android:id="@+id/layoutItemCode"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/layoutTotalScanQty"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintWidth_percent="0.40">
+
+                        <TextView
+                            android:id="@+id/tvItemCodeLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="Item Code"
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvItemCode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text=""
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutTotalScanQty"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/layoutOpenQty"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/layoutItemCode"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintWidth_percent="0.30">
+
+                        <TextView
+                            android:id="@+id/tvTotalScanQtyLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="Total Scan Qty."
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTotalScannQty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text="0.00"
+                            android:textAllCaps="true"
+                            android:textColor="@color/grey"
+                            android:textSize="@dimen/text_size_12" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutOpenQty"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/layoutTotalScanQty"
+                        app:layout_constraintTop_toTopOf="@+id/layoutTotalScanQty"
+                        app:layout_constraintWidth_percent="0.30">
+
+                        <TextView
+                            android:id="@+id/tvOpenQtyLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="Open Qty."
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvOpenQty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text="0.00"
+                            android:textAllCaps="true"
+                            android:textColor="@color/grey"
+                            android:textSize="@dimen/text_size_12" />
+
+
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/tr_total_scan_fields"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/size_5"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <LinearLayout
+                        android:id="@+id/layoutItemName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintEnd_toStartOf="@+id/layoutItemType"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/tvItemNameLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="Item Name"
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvItemName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text=""
+                            android:textColor="@color/grey"
+                            android:textSize="@dimen/text_size_12" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutItemType"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/layoutItemName"
+                        app:layout_constraintTop_toTopOf="@+id/layoutItemName">
+
+                        <TextView
+                            android:id="@+id/tvItemTypeLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="Total Scan GW"
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTotalScanGw"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text=""
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12" />
+
+
+                    </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <androidx.constraintlayout.widget.ConstraintLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <LinearLayout
+                        android:id="@+id/layoutWidth"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/layoutLength"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintWidth_percent="0.40">
+
+                        <TextView
+                            android:id="@+id/tvWidthLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="Width"
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvWidth"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text="0.00"
+                            android:textColor="@color/grey"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="normal" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutLength"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/layoutGSM"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/layoutWidth"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintWidth_percent="0.30">
+
+                        <TextView
+                            android:id="@+id/tvLengthLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="Length"
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvLength"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text="0.00"
+                            android:textAllCaps="true"
+                            android:textColor="@color/grey"
+                            android:textSize="@dimen/text_size_12" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutGSM"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/layoutLength"
+                        app:layout_constraintTop_toTopOf="@+id/layoutLength"
+                        app:layout_constraintWidth_percent="0.30">
+
+                        <TextView
+                            android:id="@+id/tvGSMLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:text="GSM"
+                            android:textColor="@color/black"
+                            android:textSize="@dimen/text_size_12"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvGSM"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:includeFontPadding="false"
+                            android:paddingEnd="@dimen/size_8"
+                            android:text="0.00"
+                            android:textAllCaps="true"
+                            android:textColor="@color/grey"
+                            android:textSize="@dimen/text_size_12" />
+
+
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <!--<TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="3dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="3dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="Item Name "
+                        android:singleLine="true"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_item_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="FRONT LITE"
+                        android:singleLine="true"
+                        android:textColor="@color/black"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_quantity"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="Open Qty.  "
+                        android:singleLine="true"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_open_qty"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/muli_bold"
+                        android:paddingLeft="6dp"
+                        android:text="0.0"
+                        android:singleLine="true"
+                        android:textColor="@color/black"
+                        android:textSize="11sp" />
+
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:paddingLeft="5dp"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="Width  "
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_width"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:text="0.0"
+                        android:fontFamily="@font/muli_bold"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="Length  "
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_length"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="0.0"
+                        android:textColor="@color/black"
+                        android:textSize="11sp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:paddingLeft="5dp"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="23dp"
+                        android:layout_weight="25"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="GSM      "
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_gsm"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="75"
+                        android:layout_gravity="center"
+                        android:text="0.0"
+                        android:fontFamily="@font/muli_bold"
+                        android:textSize="11sp" />
+
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tr_total_scan_fields"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="5dp"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="Total Scan Qty "
+                        android:singleLine="true"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_total_scann_qty"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:text="0.0"
+                        android:singleLine="true"
+                        android:fontFamily="@font/muli_bold"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/muli_bold"
+                        android:text="Total Scan GW"
+                        android:singleLine="true"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_total_scan_gw"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="25"
+                        android:layout_gravity="center"
+                        android:text="0.0"
+                        android:singleLine="true"
+                        android:fontFamily="@font/muli_bold"
+                        android:textSize="12sp" />
+
+                </TableRow>-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/size_5"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:text="Batch Code"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/size_40"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/round_gray_backgruand"
+                        android:fontFamily="@font/muli_bold"
+                        android:gravity="center_vertical"
+                        android:hint="Scan Item"
+                        android:orientation="horizontal"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:boxStrokeColor="@color/colorPrimary">
+
+                        <EditText
+                            android:id="@+id/ed_batch_code_scan"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="0.85"
+                            android:background="@null"
+                            android:ellipsize="end"
+                            android:focusableInTouchMode="true"
+                            android:fontFamily="@font/muli_bold"
+                            android:hint="Scan item"
+                            android:imeOptions="actionDone|actionGo|actionSend"
+                            android:lines="1"
+                            android:maxLines="1"
+                            android:paddingLeft="8sp"
+                            android:singleLine="true"
+                            android:textColor="@color/black"
+                            android:textSize="12sp" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/ivScanBatchCode"
+                            android:layout_width="0dp"
+                            android:layout_weight="0.15"
+                            android:paddingVertical="@dimen/size_7"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="end|center_vertical"
+                            android:src="@drawable/ic_baseline_qr_code_scanner_24" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/scaned_item_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:layout_weight="1.5"
+                        android:background="@drawable/round_gray_backgruand"
+                        android:fontFamily="@font/muli_bold"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:visibility="gone">
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="5dp"
+                                android:layout_weight="0.8"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="Batch        :  "
+                                    android:textColor="@color/black"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/tv_batch"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_weight="0.5"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="1000233"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="5dp"
+                                android:layout_weight="1"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="Doc Entry            :  "
+                                    android:textColor="@color/black"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/tv_doc_entry"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_weight="0.5"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="102"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="5dp"
+                                android:layout_weight="0.8"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="ItemCode  :  "
+                                    android:textColor="@color/black"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/tv_item_code"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_weight="3"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="FL-JUMBO"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="5dp"
+                                android:layout_weight="1"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="ItemDescription  :  "
+                                    android:textColor="@color/black"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/tv_item_desc"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_weight="3"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="FL-JUMBO"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="5dp"
+                                android:layout_weight="1"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="Status       :  "
+                                    android:textColor="@color/black"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/tv_status"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_weight="3"
+                                    android:fontFamily="@font/muli_bold"
+                                    android:text="bdsStatus_Released"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                        </TableRow>
+
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_batch_items"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="3dp"
+                        tools:listitem="@layout/batch_items_scanned_layout_delivery"
+                        tools:itemCount="2"
+                        android:visibility="visible"
+                        android:paddingBottom="3dp" />
+
+                </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

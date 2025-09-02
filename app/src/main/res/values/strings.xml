@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">AC Polycoaters</string>
+    <string name="go">GO</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="pass">$V$9Y$&amp;5E$&amp;Z</string>
+    <string name="delivery">Delivery :</string>
+    <string name="components">Components:</string>
+    <string name="issue_for_production">Issue for Production</string>
+    <string name="return_from_production">Return from Production</string>
+    <string name="receipt_production">Receipt Production</string>
+    <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout?</string>
+    <string name="logout">Logout</string>
+
+    <!--<string name="VersionName">V-1.1.4 2025.08.27</string>-->
+    <!--<string name="VersionName">V-1.1.5 2025.08.28</string>-->
+    <string name="VersionName">V-1.1.6 2025.08.28</string>
+</resources>
