@@ -3,7 +3,6 @@ package com.example.acPolycoaters.ui.issueForProductionOrder.UI.qrScannerUi
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -11,10 +10,8 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.budiyev.android.codescanner.AutoFocusMode
 import com.budiyev.android.codescanner.CodeScanner
@@ -26,10 +23,190 @@ import com.example.acPolycoaters.databinding.ActivityScannerBinding
 
 class QRScannerActivity : AppCompatActivity() {
 
+    // View binding instance to access views in the layout
+    private lateinit var binding: ActivityScannerBinding
+
+    // CodeScanner instance
+    private lateinit var codeScanner: CodeScanner
+
+    /**
+     * This launcher is used to request one or more permissions and handle the result.
+     * It replaces the old onRequestPermissionsResult() method.
+     */
+    @SuppressLint("NewApi")
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val deniedList = permissions.filter { !it.value }.keys
+
+            if (deniedList.isEmpty()) {
+                // ✅ All permissions were granted by the user.
+                codeScanner.startPreview()
+            } else {
+                // ❌ Some permissions were denied.
+                var isPermanentlyDenied = false
+                for (permission in deniedList) {
+                    if (!shouldShowRequestPermissionRationale(permission)) {
+                        // The user has selected "Don't ask again."
+                        isPermanentlyDenied = true
+                        break
+                    }
+                }
+
+                if (isPermanentlyDenied) {
+                    // Guide the user to the app settings to grant the permissions.
+                    openSettingsDialog()
+                } else {
+                    // Show a rationale dialog to explain why the permissions are needed.
+                    showRationaleDialog()
+                }
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Inflate the layout using View Binding
+        binding = ActivityScannerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Initialize the CodeScanner with the activity context and scanner view
+        codeScanner = CodeScanner(this, binding.scannerView)
+
+        // Configure the scanner and check for permissions
+        setupScanner()
+        checkAndRequestPermissions()
+    }
+
+    /**
+     * Configures the behavior of the CodeScanner.
+     */
+    private fun setupScanner() {
+        codeScanner.camera = CodeScanner.CAMERA_BACK // Use the rear camera
+        codeScanner.formats = CodeScanner.ALL_FORMATS // Scan all supported formats
+        codeScanner.autoFocusMode = AutoFocusMode.SAFE
+        codeScanner.scanMode = ScanMode.SINGLE // Scan one code and stop
+        codeScanner.isAutoFocusEnabled = true
+        codeScanner.isFlashEnabled = false
+
+        // Callback for when a QR code is successfully decoded
+        codeScanner.decodeCallback = DecodeCallback {
+            runOnUiThread {
+                val result = it.text
+                val intent = Intent()
+                intent.putExtra("batch_code", result)
+                setResult(RESULT_OK, intent)
+                finish()
+            }
+        }
+
+        // Callback for handling scanner errors
+        codeScanner.errorCallback = ErrorCallback {
+            runOnUiThread {
+                Toast.makeText(this, "Camera error: ${it.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        // Restart the preview on a tap
+        binding.scannerView.setOnClickListener {
+            codeScanner.startPreview()
+        }
+    }
+
+    /**
+     * Checks for necessary permissions and requests them if they are not granted.
+     * This method handles the difference in storage permissions across Android versions.
+     */
+    private fun checkAndRequestPermissions() {
+        val permissionsNeeded = mutableListOf<String>()
+
+        // The CAMERA permission is a core requirement for all versions.
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsNeeded.add(Manifest.permission.CAMERA)
+        }
+
+        // -- MODIFIED LOGIC FOR ANDROID 13 AND HIGHER --
+        // On Android 13 (API 33) and above, a new specific media permission is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // TIRAMISU is API 33
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES)
+            }
+        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { // Old logic for Android 9 and below
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }
+
+        if (permissionsNeeded.isNotEmpty()) {
+            // Launch the permission request dialog
+            requestPermissionLauncher.launch(permissionsNeeded.toTypedArray())
+        } else {
+            // All required permissions are already granted, start the scanner immediately
+            codeScanner.startPreview()
+        }
+    }
+
+    /**
+     * Displays a dialog to explain to the user why the permissions are needed.
+     */
+    private fun showRationaleDialog() {
+        AlertDialog.Builder(this)
+            .setMessage("Camera and Storage permissions are required for scanning QR codes.")
+            .setPositiveButton("Allow") { _, _ -> checkAndRequestPermissions() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    /**
+     * Displays a dialog to prompt the user to go to app settings for a permanently denied permission.
+     */
+    private fun openSettingsDialog() {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Permission Required")
+            .setMessage("You have denied some permissions. Please go to Settings to allow them.")
+            .setPositiveButton("Go to Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri: Uri = Uri.fromParts("package", packageName, null)
+                intent.data = uri
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+                finish() // Close the activity if the user cancels
+            }
+            .create()
+        dialog.show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // If the scanner has been initialized, start the preview.
+        // This is important for when the user returns from the settings screen.
+        if (::codeScanner.isInitialized &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            codeScanner.startPreview()
+        }
+    }
+
+    override fun onPause() {
+        // Release the camera resources when the activity is paused to prevent conflicts.
+        if (::codeScanner.isInitialized) {
+            codeScanner.releaseResources()
+        }
+        super.onPause()
+    }
+}
+
+/*class QRScannerActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityScannerBinding
     private lateinit var codeScanner: CodeScanner
 
-    /** Permission launcher */
+    *//** Permission launcher *//*
     @SuppressLint("NewApi")
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -95,7 +272,7 @@ class QRScannerActivity : AppCompatActivity() {
         }
     }
 
-    /** Check and request runtime permissions */
+    *//** Check and request runtime permissions *//*
     private fun checkAndRequestPermissions() {
         val permissionsNeeded = mutableListOf<String>()
 
@@ -127,7 +304,7 @@ class QRScannerActivity : AppCompatActivity() {
         }
     }
 
-    /** Show rationale dialog if denied */
+    *//** Show rationale dialog if denied *//*
     private fun showRationaleDialog() {
         AlertDialog.Builder(this)
             .setMessage("Camera and Storage permissions are required for scanning QR codes.")
@@ -136,7 +313,7 @@ class QRScannerActivity : AppCompatActivity() {
             .show()
     }
 
-    /** Open settings dialog if permanently denied */
+    *//** Open settings dialog if permanently denied *//*
     private fun openSettingsDialog() {
         val dialog = AlertDialog.Builder(this)
             .setTitle("Permission Required")
@@ -176,7 +353,7 @@ class QRScannerActivity : AppCompatActivity() {
         if (::codeScanner.isInitialized) codeScanner.releaseResources()
         super.onPause()
     }
-}
+}*/
 
 /*class QRScannerActivity : AppCompatActivity() {
 
