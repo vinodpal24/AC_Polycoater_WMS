@@ -1,6 +1,7 @@
 package com.example.acPolycoaters.ui.setting
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -34,6 +35,11 @@ import com.example.acPolycoaters.ui.login.LoginActivity
 import com.example.acPolycoaters.ui.setting.model.ModelGetBranch
 import com.google.gson.GsonBuilder
 import com.pixplicity.easyprefs.library.Prefs
+import com.thecode.aestheticdialogs.AestheticDialog
+import com.thecode.aestheticdialogs.DialogAnimation
+import com.thecode.aestheticdialogs.DialogStyle
+import com.thecode.aestheticdialogs.DialogType
+import com.thecode.aestheticdialogs.OnDialogClickListener
 import com.webapp.internetconnection.CheckNetwoorkConnection
 import retrofit2.Call
 import retrofit2.Callback
@@ -67,7 +73,7 @@ class SettingActivity : AppCompatActivity() {
 
     private fun initViews() {
         binding.apply {
-            switchForEnvironment.visibility = if(AppConstants.isTestEnvUIVisible) View.VISIBLE else View.GONE
+            switchForEnvironment.visibility = if (AppConstants.isTestEnvUIVisible) View.VISIBLE else View.GONE
             if (Prefs.getBoolean(AppConstants.IS_TEST_ENVIRONMENT)) {
                 switchForEnvironment.isChecked = true
                 switchForEnvironment.text = "Live Environment (Port : 9090)"
@@ -116,6 +122,7 @@ class SettingActivity : AppCompatActivity() {
         binding.apply {
             tvChooseScannerType.setOnClickListener {
                 chooseScannerPopupDialog()
+                //dialogAlert(this@SettingActivity, false)
             }
 
             ivBackArrow.setOnClickListener {
@@ -135,6 +142,25 @@ class SettingActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun dialogAlert(activity: Activity, isActivityFinish: Boolean) {
+        AestheticDialog.Builder(this, DialogStyle.FLAT, DialogType.INFO)
+            .setTitle("Success")
+            .setMessage("Inventory Transfer Request post successfully.")
+            .setCancelable(false)
+            .setAnimation(DialogAnimation.SHRINK)
+            .setOnClickListener(object : OnDialogClickListener {
+                override fun onClick(dialog: AestheticDialog.Builder) {
+                    if (isActivityFinish) {
+                        dialog.dismiss()
+                        activity.finish()
+                    } else {
+                        dialog.dismiss()
+                    }
+                }
+            })
+            .show()
     }
 
     override fun onBackPressed() {
@@ -164,7 +190,7 @@ class SettingActivity : AppCompatActivity() {
                 materialProgressDialog.show()
                 var apiConfig = ApiConstantForURL()
 
-                QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig,true)
+                QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig, true)
 
                 val networkClient = QuantityNetworkClient.create(this)
                 networkClient.getBranchList().apply {
@@ -265,7 +291,7 @@ class SettingActivity : AppCompatActivity() {
 
                         override fun onFailure(call: Call<ModelGetBranch>, t: Throwable) {
                             Log.e("issueCard_failure-----", t.toString())
-                            handleFailureError(this@SettingActivity,t)
+                            handleFailureError(this@SettingActivity, t)
                             materialProgressDialog.dismiss()
                         }
                     })
