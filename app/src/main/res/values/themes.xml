@@ -36,4 +36,35 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="inputBasicEdittext" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+
+        <item name="android:textColor">@color/black</item>
+        <item name="background">@color/white</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:textColorHint">@color/grey</item>
+        <item name="boxBackgroundColor">@color/white</item>
+        <item name="boxCornerRadiusBottomEnd">5dp</item>
+        <item name="boxCornerRadiusBottomStart">5dp</item>
+        <item name="boxCornerRadiusTopEnd">5dp</item>
+        <item name="boxCornerRadiusTopStart">5dp</item>
+        <item name="boxStrokeWidthFocused">1dp</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeColor">#656565</item>
+        <item name="errorEnabled">false</item>
+        <item name="hintEnabled">true</item>
+        <item name="hintTextColor">@color/grey</item>
+        <item name="shapeAppearance">?attr/shapeAppearanceSmallComponent</item>
+
+    </style>
+
+    <style name="editTextBasic">
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:maxLength">50</item>
+    </style>
 </resources>

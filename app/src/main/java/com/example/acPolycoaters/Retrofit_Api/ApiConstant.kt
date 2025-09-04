@@ -15,6 +15,8 @@ object ApiConstant {
     internal const val PRODUCTION_ORDER = "Values/Production"
 
     internal const val INVENTORY_GEN_EXITS = "InventoryGenExits"
+    internal const val INVENTORY_TRANSFER_REQ = "InventroyTransferRequestList"  //  InventroyTransferRequestList
+
     internal const val BATCH_NUMBER_DETAILS = "BatchNumberDetails"
     internal const val BPLID_WAREHOUSE = "Warehouses"
 

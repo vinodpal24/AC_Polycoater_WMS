@@ -2,6 +2,7 @@ package com.example.acPolycoaters.Retrofit_Api
 
 import com.example.acPolycoaters.Model.*
 import com.example.acPolycoaters.ui.deliveryOrderModule.Model.DeliveryModel
+import com.example.acPolycoaters.ui.inventoryTransferRequest.model.InventoryRequestModel
 import com.example.acPolycoaters.ui.inventoryTransferStandalone.model.GetSeriesModel
 import com.example.acPolycoaters.ui.inventoryTransferStandalone.model.InventoryPostResponse
 import com.example.acPolycoaters.ui.issueForProductionOrder.Model.InventoryGenExitsModel
@@ -121,5 +122,12 @@ interface NetworkInterface {
 
     @GET(ApiConstant.GET_ALL_BRANCHES)
     fun getBranchList(): Call<ModelGetBranch>
+
+    @GET(ApiConstant.INVENTORY_TRANSFER_REQ)
+    fun getInventoryRequestList(
+        @Query("DBName") DBName: String,
+        @Query("BPLId") BPLId: String,
+        @Query("DocNum") docNum: String
+    ): Call<InventoryRequestModel>
 
 }

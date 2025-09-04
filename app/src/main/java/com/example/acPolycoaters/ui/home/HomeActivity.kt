@@ -26,6 +26,7 @@ import com.example.acPolycoaters.Retrofit_Api.NetworkClients
 import com.example.acPolycoaters.Retrofit_Api.QuantityNetworkClient
 import com.example.acPolycoaters.SessionManagement.SessionManagement
 import com.example.acPolycoaters.databinding.ActivityHomeBinding
+import com.example.acPolycoaters.ui.inventoryTransferRequest.ui.InventoryTransferRequestActivity
 import com.example.acPolycoaters.ui.inventoryTransferStandalone.ui.InventoryTransferStandaloneActivity
 import com.example.acPolycoaters.ui.login.LoginActivity
 import com.example.acPolycoaters.ui.issueForProductionOrder.UI.productionOrderLines.ProductionListActivity
@@ -66,7 +67,7 @@ class HomeActivity : AppCompatActivity() {
         val items = listOf(
             HomeItem(R.drawable.issue_prod_icon, "Issue for Production", AppConstants.ISSUE_FOR_PRODUCTION, "Y"),
             //HomeItem(R.drawable.ic_scan_view, "Scan & View", AppConstants.SCAN_AND_VIEW, "Y"),
-            //HomeItem(R.drawable.ic_inventory_req, "Inventory Req.", AppConstants.INVENTORY_REQ, "Y"),
+            HomeItem(R.drawable.ic_inventory_req, "Inventory Req.", AppConstants.INVENTORY_REQ, "Y"),
             HomeItem(R.drawable.delivery_icon, "Goods Issue", AppConstants.GOODS_ISSUE, "N"),
             HomeItem(R.drawable.receipt_prod_icon, "Inventory Transfer (GRPO)", AppConstants.INVENTORY_TRANSFER_GRPO, "N"),
             HomeItem(R.drawable.receipt_prod_icon, "Goods Receipt PO", AppConstants.GOODS_RECEIPT_PO, "N"),
@@ -137,9 +138,9 @@ class HomeActivity : AppCompatActivity() {
             }
 
             AppConstants.INVENTORY_REQ -> {
-                /*var intent: Intent = Intent(this, InventoryOrderActivity::class.java)
+                var intent: Intent = Intent(this, InventoryTransferRequestActivity::class.java)
                 // intent.putExtra("flag",flag)
-                startActivity(intent)*/
+                startActivity(intent)
             }
 
             AppConstants.GOODS_ISSUE -> {

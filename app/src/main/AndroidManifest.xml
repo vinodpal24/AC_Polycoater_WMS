@@ -34,7 +34,7 @@
         tools:ignore="HardcodedDebugMode"
         tools:targetApi="31">
         <activity
-            android:name=".ui.inventoryTransferRequest.ui.inventoryTransferRequestLinesActivity"
+            android:name=".ui.inventoryTransferRequest.ui.InventoryTransferRequestLinesActivity"
             android:exported="false" />
         <activity
             android:name=".ui.inventoryTransferRequest.ui.InventoryTransferRequestActivity"

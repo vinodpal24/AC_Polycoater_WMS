@@ -14,11 +14,13 @@ import java.text.DecimalFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
 object GlobalMethods {
+    const val pullRefreshTime = 2000
     open fun showMessage(context: Context?, message: String?) {
         Toasty.warning(context!!, message!!, Toast.LENGTH_SHORT).show()
     }
@@ -47,6 +49,20 @@ object GlobalMethods {
     fun <T> toPrettyJson(data: T): String {
         val gsonPretty: Gson = GsonBuilder().setPrettyPrinting().create()
         return gsonPretty.toJson(data)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun convert_yyyy_MM_dd_T_hh_mm_ss_into_ddMMYYYY(data: String): String {
+        val inputDate = "2024-07-25T00:00:00"
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+
+        // Parse the input date string to LocalDateTime
+        val dateTime = LocalDateTime.parse(data)
+
+        // Format the LocalDateTime to the desired format
+        val formattedDate = dateTime.format(formatter)
+
+        return formattedDate
     }
 
     fun datePicker(context: Context, editText: EditText) {

@@ -121,15 +121,15 @@ object NetworkClients {
 
     private val BASE_URL = ApiConstant.BASE_URL
 
-    /*private val loggingInterceptor: HttpLoggingInterceptor by lazy {
+    private val loggingInterceptor: HttpLoggingInterceptor by lazy {
         HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
-    }*/
-    val loggingInterceptor = HttpLoggingInterceptor { message ->
+    }
+    /*val loggingInterceptor = HttpLoggingInterceptor { message ->
         val logFile = File(MyApp.currentApp?.filesDir, "network_log.txt")
         logFile.appendText("$message\n")
     }.apply {
         level = HttpLoggingInterceptor.Level.BODY
-    }
+    }*/
 
     private val gsonConverterFactory: GsonConverterFactory by lazy {
         GsonConverterFactory.create(
