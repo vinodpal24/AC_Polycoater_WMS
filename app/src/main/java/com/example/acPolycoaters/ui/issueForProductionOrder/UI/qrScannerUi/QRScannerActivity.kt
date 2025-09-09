@@ -3,12 +3,16 @@ package com.example.acPolycoaters.ui.issueForProductionOrder.UI.qrScannerUi
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -112,6 +116,7 @@ class QRScannerActivity : AppCompatActivity() {
             .addOnSuccessListener { barcodes ->
                 for (barcode in barcodes) {
                     barcode.rawValue?.let { value ->
+                        vibrateDevice()
                         Toast.makeText(this, "Scanned: $value", Toast.LENGTH_LONG).show()
 
                         val intent = Intent()
@@ -132,6 +137,28 @@ class QRScannerActivity : AppCompatActivity() {
             .addOnCompleteListener {
                 imageProxy.close()
             }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun vibrateDevice() {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager =
+                getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(
+                    200,  // vibration duration in ms
+                    VibrationEffect.DEFAULT_AMPLITUDE
+                )
+            )
+        } else {
+            vibrator.vibrate(200) // deprecated but works on older devices
+        }
     }
 
     private fun openSettingsDialog() {
