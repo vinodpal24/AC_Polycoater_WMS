@@ -1,17 +1,23 @@
 package com.example.acPolycoaters.ui.inventoryTransferStandalone.ui
 
 import android.app.Activity
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
@@ -228,7 +234,7 @@ class InventoryTransferStandaloneActivity : AppCompatActivity(), GoodsChanchalAd
 
             var itemList_gl: ArrayList<ScanedOrderBatchedItems.Value> = ArrayList()
             itemList_gl.clear()
-            var data = ScanedOrderBatchedItems.Value("0", itemCode, itemDesc, "", "", "", "", "", "", "", "", 0L, "", "",0.0, 0.0, 0.0, 0.0, 0.0, "", 0.0, 0.0, 0.0, 0.0, "")
+            var data = ScanedOrderBatchedItems.Value("0", itemCode, itemDesc, "", "", "", "", "", "", "", "", 0L, "", "", 0.0, 0.0, 0.0, 0.0, 0.0, "", 0.0, 0.0, 0.0, 0.0, "")
 
             itemList_gl.add(data)
 
@@ -248,7 +254,7 @@ class InventoryTransferStandaloneActivity : AppCompatActivity(), GoodsChanchalAd
         if (networkConnection.getConnectivityStatusBoolean(this@InventoryTransferStandaloneActivity)) {
             materialProgressDialog.show()
             var apiConfig = ApiConstantForURL()
-            QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig,true)
+            QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig, true)
 
             val networkClient = QuantityNetworkClient.create(this@InventoryTransferStandaloneActivity)
             networkClient.getQuantityGoodsWithWareHouseCode(
@@ -610,8 +616,145 @@ class InventoryTransferStandaloneActivity : AppCompatActivity(), GoodsChanchalAd
             etPostingDate.setOnClickListener {
                 GlobalMethods.datePicker(this@InventoryTransferStandaloneActivity, binding.etPostingDate)
             }
+            if (sessionManagement.getScannerType(this@InventoryTransferStandaloneActivity) == "LEASER") {
+                binding.ivScanBatchCode.visibility = View.GONE
+                binding.edBatchCodeScan.requestFocus()
+                binding.edFromWarehouse.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(charSequence: CharSequence?, start: Int, count: Int, after: Int) {
+                        // You can handle the text before it changes here
+                    }
 
-            if (sessionManagement.getScannerType(this@InventoryTransferStandaloneActivity) == "QR_SCANNER" || sessionManagement.getScannerType(
+                    override fun onTextChanged(charSequence: CharSequence?, start: Int, before: Int, count: Int) {
+                        // This method is called when the text changes
+                        val scannedResult = charSequence.toString()
+                        if (!scannedResult.isNullOrEmpty()) {
+                            binding.edFromWarehouse.setText(scannedResult)
+                            // move focus to ToWarehouse
+                            binding.edToWarehouse.isFocusableInTouchMode = true
+                            binding.edToWarehouse.requestFocus()
+                            val parts = scannedResult.split(",")
+                            val lastPart = parts.last()
+                            val itemCode = parts[0]
+                            type = lastPart
+                            BatchScannedData = scannedResult
+
+                            if (parts.isNotEmpty()) {
+                                fromWhareHouse = parts[0].trim()
+
+                                if (parts.size > 2) {   // ✅ check at least 3 elements before accessing index 2
+                                    fromBinLocation = parts[2].trim()
+                                }
+
+                                if (fromWhareHouse.isNotEmpty()) {
+                                    //getBPL_IDNumber()
+
+                                    // getBPLID(fromWhareHouse, "INVT")
+                                    BPLID = if (Prefs.getString(AppConstants.BPLID, "").isNotEmpty()) Prefs.getString(AppConstants.BPLID, "") else ""
+                                    getDocSeriesApi(BPLID)
+                                }
+                            }
+
+                            // binding.edFromWhareHouse.setText("")
+                        }
+                    }
+
+                    override fun afterTextChanged(editable: Editable?) {
+                        // You can handle after text is changed here
+                    }
+                })
+                binding.edToWarehouse.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(charSequence: CharSequence?, start: Int, count: Int, after: Int) {
+                        // You can handle the text before it changes here
+                    }
+
+                    override fun onTextChanged(charSequence: CharSequence?, start: Int, before: Int, count: Int) {
+                        // This method is called when the text changes
+                        val scannedResult = charSequence.toString()
+                        Log.i("ITR_STAND", "Item Scan Data: $scannedResult\nScanResult To warehouse: $scannedResult")
+
+                        if (!scannedResult.isNullOrEmpty()) {
+                            binding.edToWarehouse.setText(scannedResult)
+                            binding.edBatchCodeScan.isFocusableInTouchMode = true
+                            binding.edBatchCodeScan.requestFocus()  // move focus to ToWarehouse
+                            val parts = scannedResult.split(",")
+                            val lastPart = parts.last()
+                            val itemCode = parts[0]
+                            type = lastPart
+                            BatchScannedData = scannedResult
+
+                            if (parts.isNotEmpty()) {
+                                toWhareHouse = parts[0].trim()
+
+                                if (parts.size > 2) {   // ✅ check before using index 2
+                                    toBinLocation = parts[2].trim()
+                                }
+                            }
+
+                            // binding.edToWhareHouse.setText("")
+                        }
+                    }
+
+                    override fun afterTextChanged(editable: Editable?) {
+                        // You can handle after text is changed here
+                    }
+                })
+
+
+
+                binding.edBatchCodeScan.addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        //todo HIDE
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                            if (imm != null && binding.edBatchCodeScan != null) {
+                                imm.hideSoftInputFromWindow(binding.edBatchCodeScan.windowToken, 0)
+                            }
+                        }, 200)
+
+                        val scannedResult = s.toString().trim()
+
+                        Log.i("ITR_STAND", "ScanResult: $scannedResult")
+                        if (!scannedResult.isNullOrEmpty()) {
+                            val parts = scannedResult.split(",")
+                            val lastPart = parts.last()
+                            val batchCode = parts.getOrNull(0).toString()
+                            val itemCode = parts.getOrNull(1).toString()
+                            type = parts.getOrNull(6).toString()
+                            BatchScannedData = scannedResult
+
+                            when (type) {
+                                "Batch" -> {
+                                    if (checkDuplicate(AppConstants.scannedItemForGood, batchCode)) {
+                                        scanBatchLinesItem(batchCode, recyclerView, pos, itemCode, binding.tvTotalScannQty, type)
+                                    }
+                                }
+
+                                "Serial" -> {
+                                    if (checkDuplicateForSerial(AppConstants.scannedItemForGood, batchCode)) {
+                                        //scanSerialLineItem(parts[1], recyclerView, pos, itemCode, binding.tvTotalScannQty, type)
+                                    }
+                                }
+
+                                "NONE", "None" -> {
+                                    itemDesc = parts[2]
+                                    if (checkDuplicateForNone(AppConstants.scannedItemForGood, batchCode)) {
+                                        callNoneBindFunction(itemCode, recyclerView, pos, binding.tvTotalScannQty, itemCode, batchCode)
+                                    }
+                                }
+
+                                else -> {
+                                    GlobalMethods.showMessage(this@InventoryTransferStandaloneActivity, "Scan Type is $type")
+                                }
+                            }
+                        }
+                    }
+
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                })
+
+            } else if (sessionManagement.getScannerType(this@InventoryTransferStandaloneActivity) == "QR_SCANNER" || sessionManagement.getScannerType(
                     this@InventoryTransferStandaloneActivity
                 ) == null
             ) {
@@ -1109,10 +1252,10 @@ class InventoryTransferStandaloneActivity : AppCompatActivity(), GoodsChanchalAd
                                 Log.e("success------", "Successful!")
                                 Log.d("Doc_Num", "onResponse: " + response.body()!!.DocNum.toString())
 
-                                    /*AestheticDialog.Builder(this@InventoryTransferStandaloneActivity, DialogStyle.EMOTION, DialogType.SUCCESS)
-                                        .setTitle("Success")
-                                        .setMessage("Inventory transfer standalone post successfully with docnum ${response.body()?.DocNum}")
-                                        .show()*/
+                                /*AestheticDialog.Builder(this@InventoryTransferStandaloneActivity, DialogStyle.EMOTION, DialogType.SUCCESS)
+                                    .setTitle("Success")
+                                    .setMessage("Inventory transfer standalone post successfully with docnum ${response.body()?.DocNum}")
+                                    .show()*/
 
                                 GlobalMethods.showSuccess(
                                     this@InventoryTransferStandaloneActivity,
