@@ -87,7 +87,7 @@ class SettingActivity : AppCompatActivity() {
         materialProgressDialog = MaterialProgressDialog(this@SettingActivity)
         checkNetwoorkConnection = CheckNetwoorkConnection(application)
         sessionManagement = SessionManagement(this)
-        sessionManagement.setScannerType(this, "QR_SCANNER")
+        //sessionManagement.setScannerType(this, "QR_SCANNER")
         callGetBranchList()
         setRowItemSpinner(items)
     }

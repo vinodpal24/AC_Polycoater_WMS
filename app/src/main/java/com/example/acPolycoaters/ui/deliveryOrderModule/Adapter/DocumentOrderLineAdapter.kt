@@ -290,8 +290,6 @@ class DocumentOrderLineAdapter(
                 chipSave.setOnClickListener {
                     callback.onApiResponse(hashMap, quantityHashMap)
                 }
-
-
             }
         }
     }

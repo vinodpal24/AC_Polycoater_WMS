@@ -712,6 +712,7 @@ class InventoryTransferStandaloneActivity : AppCompatActivity(), GoodsChanchalAd
                         }, 200)
 
                         val scannedResult = s.toString().trim()
+                        recyclerView = rvBatchItems
 
                         Log.i("ITR_STAND", "ScanResult: $scannedResult")
                         if (!scannedResult.isNullOrEmpty()) {
@@ -746,6 +747,9 @@ class InventoryTransferStandaloneActivity : AppCompatActivity(), GoodsChanchalAd
                                     GlobalMethods.showMessage(this@InventoryTransferStandaloneActivity, "Scan Type is $type")
                                 }
                             }
+
+                            binding.edBatchCodeScan.setText("")
+                            binding.edBatchCodeScan.requestFocus()
                         }
                     }
 

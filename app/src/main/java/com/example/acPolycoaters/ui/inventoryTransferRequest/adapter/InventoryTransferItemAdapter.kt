@@ -202,87 +202,56 @@ class InventoryTransferItemAdapter(
                             Log.e("text====>BP", "afterTextChanged: No Change" + s.toString().trim())
 
                             // Fetch the text from EditText after text has changed
-                            val text = s.toString().trim()
+                            val result = s.toString().trim()
 
-                            Log.e("text====>BP", "afterTextChanged: ======BBB==>" + text)
+                            var size = 0
+                            val list = hashMap.get("Item" + pos) as List<*>
+                            Log.e("size===>", list.size.toString())
+                            Log.e("ItemCode===>", itemCode)
+                            Log.e("InvtTr", "Scan Result: $result")
+                            val parts = result?.split(",")
+                            val batchCode = parts?.getOrNull(0).toString()
+                            val itemCode = parts?.getOrNull(1).toString()
+                            var batchInDate = result.toString().split(",")[5].replace("-", "")
+                            Log.e("batchInDate===>", batchInDate)
+                            //todo spilt string and get string at 0 index...
 
-                            if (text.isNotEmpty()) {
-                                try {
-                                    val parts = text.split(",")
-                                    val lastPart = parts.getOrNull(parts.size - 1) ?: return
-                                    itemTyep = lastPart
-                                    Log.e("text====>", "afterTextChanged: Normal" + itemTyep)
-                                    if (itemTyep.equals("Batch", true)) {
+                            //todo set validation for duplicate item
+                            if (tvTotalScanGW.text.equals("Batch")) {
+                                if (checkDuplicate(hashMap.get("Item" + pos)!!, result.toString().split(",")[1])) {
+                                    //todo scan call api here...
+                                    scanBatchLinesItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!, batchInDate)
 
-                                        val batch = parts.getOrNull(1).toString()
-                                        val qrItemCode = parts.getOrNull(0).toString()
-                                        val batchInDate = parts.getOrNull(5)?.replace("-", "").toString()
-                                        /*if (scannedBatchSet.contains(batch)) {
-                                            Log.w("SCAN_ITEM", "Duplicate scan blocked immediately: $batch")
-                                            Toast.makeText(context, "Batch already scanned!", Toast.LENGTH_SHORT).show()
-                                            return
-                                        }*/
+                                }
+                            } else if (tvTotalScanGW.text.equals("Serial")) {
+                                if (checkDuplicateForSerial(hashMap.get("Item" + pos)!!, result.toString().split(",")[1])) {
+                                    //todo scan call api here...
+                                    scanSerialLineItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!)
+                                }
+                            } else if (tvTotalScanGW.text.equals("None") || tvTotalScanGW.text.equals("NONE")) {
+                                var scanItem = result.toString().split(",")[0]
+                                val parts = result.toString().split(",")
 
-                                        val isUnique = checkDuplicate(hashMap["Item$position"] ?: arrayListOf(), batch)
-                                        Log.e(
-                                            "SCAN_ITEM",
-                                            "Before If => Scan String (${parts.size})=> ($text) \nhashMap(ScannedList) Size: ${hashMap["Item$position"]?.size} ScanItem Code: $itemCode, QrItem Code: $qrItemCode," +
-                                                    "ItemType:" +
-                                                    " " +
-                                                    "${itemTyep}, Batch: ${batch} " +
-                                                    "isUnique: $isUnique"
-                                        )
+                                val lastPart = parts.last()
+                                var itemCode = parts[1]
+                                itemDesc = parts[2]
 
-                                        /*var isBatch = scanedBatchedItemsList_gl.any { it.Batch.equals(batch, true) }
-                                        Log.w("SCAN_ITEM", "isBatch: $isBatch")*/
+                                type = lastPart
 
-                                        if (isUnique) {
-                                            Log.e("SCAN_ITEM", "checkDuplicate if => ItemType: ${itemTyep}, Batch: ${batch}")
-                                            //todo scan call api here...
-                                            scanBatchLinesItem(batch, binding.rvBatchItems, adapterPosition, itemCode, binding.tvOpenQty, binding.tvTotalScannQty, binding.tvTotalScanGw, batchInDate)
-                                        }
-                                    } else if (itemTyep.equals("Serial", true)) {
-                                        //todo getting QR code on 2 index
-                                        val batch = parts.getOrNull(1).toString()
-                                        Log.e("text====>", "afterTextChanged: " + batch)
-
-
-                                        if (checkDuplicateForSerial(hashMap.get("Item" + position)!!, batch)) {
-                                            Log.e("SCAN_ITEM", "checkDuplicateForSerial if => ItemType: ${itemTyep}, Batch: ${batch}")
-                                            //todo scan call api here...
-                                            scanSerialLineItem(batch, binding.rvBatchItems, adapterPosition, itemCode, binding.tvOpenQty, binding.tvTotalScannQty, binding.tvTotalScanGw)
-                                        }
-                                    } else if (itemTyep.equals("None") || itemTyep.equals("NONE")) {
-                                        Log.e("text====>BBBBBBBB", "afterTextChanged: Normal")
-                                        var scanItem = text
-                                        val parts = text.split(",")
-
-                                        val lastPart = parts.last()
-                                        var itemCode = parts[0]
-                                        itemDesc = parts[2]
-
-                                        type = lastPart
-                                        Log.e("text====>", "Normal=1: ")
-                                        if (checkDuplicateForNone(hashMap.get("Item" + position)!!, text)) {
-                                            Log.e("SCAN_ITEM", "checkDuplicateForNone if => ItemType: ${itemTyep}, Batch: No")
-                                            //todo scan call api here...
-                                            callNoneBindFunction(itemCode, binding.rvBatchItems, adapterPosition, tvTotalScanQty, itemDesc, scanItem)
-                                        }
-                                    }
-
-
-                                    // Clear the EditText and request focus
-                                    binding.edBatchCodeScan.setText("")
-                                    binding.edBatchCodeScan.requestFocus()
-
-                                    Handler(Looper.getMainLooper()).postDelayed({
-                                        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                                        imm?.hideSoftInputFromWindow(binding.edBatchCodeScan.windowToken, 0)
-                                    }, 200)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                                if (checkDuplicateForNone(hashMap.get("Item" + pos)!!, scanItem)) {
+                                    //todo scan call api here...
+                                    callNoneBindFunction(itemCode, recyclerView, pos, tvTotalScanQty, itemDesc, scanItem)
+                                }
+                            } else {
+                                if (tvTotalScanGW.text.isEmpty()) {
+                                    GlobalMethods.showMessage(context, "Scan Type is Empty")
+                                } else {
+                                    GlobalMethods.showMessage(context, "Scan Type is " + tvTotalScanGW.text.toString())
                                 }
                             }
+
+                            binding.edBatchCodeScan.setText("")
+                            binding.edBatchCodeScan.requestFocus()
                         }
 
                         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -293,6 +262,7 @@ class InventoryTransferItemAdapter(
                             // No action needed here
                         }
                     })
+
                 }
 
 
