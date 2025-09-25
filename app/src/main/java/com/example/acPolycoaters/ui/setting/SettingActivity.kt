@@ -88,6 +88,7 @@ class SettingActivity : AppCompatActivity() {
         checkNetwoorkConnection = CheckNetwoorkConnection(application)
         sessionManagement = SessionManagement(this)
         //sessionManagement.setScannerType(this, "QR_SCANNER")
+        binding.tvChooseScannerType.text = if(sessionManagement.getScannerType(this)=="LEASER") "Selected Scanner is Lesar Scanner" else "Selected Scanner is Camera Scanner"
         callGetBranchList()
         setRowItemSpinner(items)
     }
@@ -364,6 +365,7 @@ class SettingActivity : AppCompatActivity() {
 //                sessionManagement.setQRScanner(1)
                 sessionManagement.setScannerType(this, "QR_SCANNER")
             }
+            binding.tvChooseScannerType.text = if(sessionManagement.getScannerType(this)=="LEASER") "Selected Scanner is Lesar Scanner" else "Selected Scanner is Camera Scanner"
             builder.dismiss()
         }
 

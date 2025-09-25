@@ -343,7 +343,8 @@ class ProductionListActivity : AppCompatActivity() {
 
                                 } else {
                                     materialProgressDialog.dismiss()
-                                    val gson1 = GsonBuilder().create()
+                                    handleErrorResponse(response)
+                                    /*val gson1 = GsonBuilder().create()
                                     var mError: OtpErrorModel
                                     try {
                                         val s = response.errorBody()!!.string()
@@ -366,13 +367,13 @@ class ProductionListActivity : AppCompatActivity() {
                                             startActivity(mainIntent)
                                             finish()
                                         }
-                                        /*if (mError.error.message.value != null) {
+                                        *//*if (mError.error.message.value != null) {
                                             AppConstants.showError(this@ProductionListActivity, mError.error.message.value)
                                             Log.e("json_error------", mError.error.message.value)
-                                        }*/
+                                        }*//*
                                     } catch (e: IOException) {
                                         e.printStackTrace()
-                                    }
+                                    }*/
                                 }
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -393,6 +394,44 @@ class ProductionListActivity : AppCompatActivity() {
         }
 
     }
+
+    private fun handleErrorResponse(response: Response<*>) {
+        try {
+            val errorString = response.errorBody()?.string()
+
+            if (errorString.isNullOrBlank()) {
+                GlobalMethods.showError(this, "Unknown server error")
+                return
+            }
+
+            // Try parsing JSON first
+            val gson = GsonBuilder().create()
+            try {
+                val mError = gson.fromJson(errorString, OtpErrorModel::class.java)
+                when (mError.error.code) {
+                    400 -> GlobalMethods.showError(this, mError.error.message.value)
+                    306 -> {
+                        GlobalMethods.showError(this, mError.error.message.value)
+                        val mainIntent = Intent(
+                            this@ProductionListActivity,
+                            LoginActivity::class.java
+                        )
+                        startActivity(mainIntent)
+                        finish()
+                    }
+                    else -> GlobalMethods.showError(this, mError.error.message.value)
+                }
+            } catch (jsonEx: Exception) {
+                // Fallback: show raw string from SAP
+                Log.e("API_ERROR_RAW", errorString)
+                GlobalMethods.showError(this, errorString)
+            }
+        } catch (e: IOException) {
+            Log.e("API_ERROR_IO", e.message, e)
+            GlobalMethods.showError(this, "Error reading server response")
+        }
+    }
+
 
     //todo DELIVERY ORDER API LIST ITEMS BIND....
     fun loadDeliveryOrderListItems(page: Int) {

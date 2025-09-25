@@ -209,49 +209,55 @@ class InventoryTransferItemAdapter(
                             Log.e("size===>", list.size.toString())
                             Log.e("ItemCode===>", itemCode)
                             Log.e("InvtTr", "Scan Result: $result")
-                            val parts = result?.split(",")
-                            val batchCode = parts?.getOrNull(0).toString()
-                            val itemCode = parts?.getOrNull(1).toString()
-                            var batchInDate = result.toString().split(",")[5].replace("-", "")
-                            Log.e("batchInDate===>", batchInDate)
-                            //todo spilt string and get string at 0 index...
+                            if(result.isNotEmpty()){
+                                try {
+                                    val parts = result?.split(",")
+                                    val batchCode = parts?.getOrNull(0).toString()
+                                    val itemCode = parts?.getOrNull(1).toString()
+                                    var batchInDate = "" //result.toString().split(",")[5].replace("-", "")
+                                    Log.e("batchInDate===>", batchInDate)
+                                    //todo spilt string and get string at 0 index...
 
-                            //todo set validation for duplicate item
-                            if (tvTotalScanGW.text.equals("Batch")) {
-                                if (checkDuplicate(hashMap.get("Item" + pos)!!, result.toString().split(",")[1])) {
-                                    //todo scan call api here...
-                                    scanBatchLinesItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!, batchInDate)
+                                    //todo set validation for duplicate item
+                                    if (tvTotalScanGW.text.equals("Batch")) {
+                                        if (checkDuplicate(hashMap.get("Item" + pos)!!, batchCode)) {
+                                            //todo scan call api here...
+                                            scanBatchLinesItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!, batchInDate)
 
-                                }
-                            } else if (tvTotalScanGW.text.equals("Serial")) {
-                                if (checkDuplicateForSerial(hashMap.get("Item" + pos)!!, result.toString().split(",")[1])) {
-                                    //todo scan call api here...
-                                    scanSerialLineItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!)
-                                }
-                            } else if (tvTotalScanGW.text.equals("None") || tvTotalScanGW.text.equals("NONE")) {
-                                var scanItem = result.toString().split(",")[0]
-                                val parts = result.toString().split(",")
+                                        }
+                                    } else if (tvTotalScanGW.text.equals("Serial")) {
+                                        if (checkDuplicateForSerial(hashMap.get("Item" + pos)!!, batchCode)) {
+                                            //todo scan call api here...
+                                            scanSerialLineItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!)
+                                        }
+                                    } else if (tvTotalScanGW.text.equals("None") || tvTotalScanGW.text.equals("NONE")) {
+                                        var scanItem = result.toString().split(",")[0]
+                                        val parts = result.toString().split(",")
 
-                                val lastPart = parts.last()
-                                var itemCode = parts[1]
-                                itemDesc = parts[2]
+                                        val lastPart = parts.last()
+                                        var itemCode = parts[1]
+                                        itemDesc = parts[2]
 
-                                type = lastPart
+                                        type = lastPart
 
-                                if (checkDuplicateForNone(hashMap.get("Item" + pos)!!, scanItem)) {
-                                    //todo scan call api here...
-                                    callNoneBindFunction(itemCode, recyclerView, pos, tvTotalScanQty, itemDesc, scanItem)
-                                }
-                            } else {
-                                if (tvTotalScanGW.text.isEmpty()) {
-                                    GlobalMethods.showMessage(context, "Scan Type is Empty")
-                                } else {
-                                    GlobalMethods.showMessage(context, "Scan Type is " + tvTotalScanGW.text.toString())
+                                        if (checkDuplicateForNone(hashMap.get("Item" + pos)!!, scanItem)) {
+                                            //todo scan call api here...
+                                            callNoneBindFunction(itemCode, recyclerView, pos, tvTotalScanQty, itemDesc, scanItem)
+                                        }
+                                    } else {
+                                        if (tvTotalScanGW.text.isEmpty()) {
+                                            GlobalMethods.showMessage(context, "Scan Type is Empty")
+                                        } else {
+                                            GlobalMethods.showMessage(context, "Scan Type is " + tvTotalScanGW.text.toString())
+                                        }
+                                    }
+
+                                    binding.edBatchCodeScan.setText("")
+                                    binding.edBatchCodeScan.requestFocus()
+                                }catch (e:Exception){
+                                    e.printStackTrace()
                                 }
                             }
-
-                            binding.edBatchCodeScan.setText("")
-                            binding.edBatchCodeScan.requestFocus()
                         }
 
                         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -1343,19 +1349,19 @@ class InventoryTransferItemAdapter(
             val parts = result?.split(",")
             val batchCode = parts?.getOrNull(0).toString()
             val itemCode = parts?.getOrNull(1).toString()
-            var batchInDate = result.toString().split(",")[5].replace("-", "")
+            var batchInDate = "" //result.toString().split(",")[5].replace("-", "")
             Log.e("batchInDate===>", batchInDate)
             //todo spilt string and get string at 0 index...
 
             //todo set validation for duplicate item
             if (tvTotalScanGW.text.equals("Batch")) {
-                if (checkDuplicate(hashMap.get("Item" + pos)!!, result.toString().split(",")[1])) {
+                if (checkDuplicate(hashMap.get("Item" + pos)!!, batchCode)) {
                     //todo scan call api here...
                     scanBatchLinesItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!, batchInDate)
 
                 }
             } else if (tvTotalScanGW.text.equals("Serial")) {
-                if (checkDuplicateForSerial(hashMap.get("Item" + pos)!!, result.toString().split(",")[1])) {
+                if (checkDuplicateForSerial(hashMap.get("Item" + pos)!!, batchCode)) {
                     //todo scan call api here...
                     scanSerialLineItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!)
                 }
