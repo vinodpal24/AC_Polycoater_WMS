@@ -59,7 +59,8 @@ import java.sql.*
 class InventoryTransferItemAdapter(
     private val context: Context, var list: ArrayList<InventoryRequestModel.StockTransferLines>, private val networkConnection: NetworkConnection,
     private val materialProgressDialog: MaterialProgressDialog, private val callback: AdapterCallback, private val save: Chip
-) : RecyclerView.Adapter<InventoryTransferItemAdapter.ViewHolder>(), BatchItemsInventoryReqAdapter.OnDeleteItemClickListener, BatchItemsInventoryReqAdapter.OnScannedItemClickListener {
+) : RecyclerView.Adapter<InventoryTransferItemAdapter.ViewHolder>(), BatchItemsInventoryReqAdapter.OnDeleteItemClickListener,
+    BatchItemsInventoryReqAdapter.OnScannedItemClickListener {
 
     //todo declaration..
     private var connection: Connection? = null
@@ -131,7 +132,7 @@ class InventoryTransferItemAdapter(
 
 
                 //binding.mainCard.setOnClickListener {
-                    //callBinLocationByWarehouse(context, this.FromWarehouseCode,position,this.ItemCode,this.Batch.toString())
+                //callBinLocationByWarehouse(context, this.FromWarehouseCode,position,this.ItemCode,this.Batch.toString())
                 //} //comment by vinod @04Jun, 2025
 
                 //callBinLocationByWarehouse(context, this.FromWarehouseCode, parentPosition)
@@ -209,11 +210,11 @@ class InventoryTransferItemAdapter(
                             Log.e("size===>", list.size.toString())
                             Log.e("ItemCode===>", itemCode)
                             Log.e("InvtTr", "Scan Result: $result")
-                            if(result.isNotEmpty()){
+                            if (result.isNotEmpty()) {
                                 try {
                                     val parts = result?.split(",")
                                     val batchCode = parts?.getOrNull(0).toString()
-                                    val itemCode = parts?.getOrNull(1).toString()
+                                    val itemCodes = parts?.getOrNull(1).toString()
                                     var batchInDate = "" //result.toString().split(",")[5].replace("-", "")
                                     Log.e("batchInDate===>", batchInDate)
                                     //todo spilt string and get string at 0 index...
@@ -222,13 +223,13 @@ class InventoryTransferItemAdapter(
                                     if (tvTotalScanGW.text.equals("Batch")) {
                                         if (checkDuplicate(hashMap.get("Item" + pos)!!, batchCode)) {
                                             //todo scan call api here...
-                                            scanBatchLinesItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!, batchInDate)
+                                            scanBatchLinesItem(batchCode, recyclerView!!, pos, itemCodes, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!, batchInDate)
 
                                         }
                                     } else if (tvTotalScanGW.text.equals("Serial")) {
                                         if (checkDuplicateForSerial(hashMap.get("Item" + pos)!!, batchCode)) {
                                             //todo scan call api here...
-                                            scanSerialLineItem(batchCode, recyclerView!!, pos, itemCode, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!)
+                                            scanSerialLineItem(batchCode, recyclerView!!, pos, itemCodes, tvOpenQty!!, tvTotalScanQty!!, tvTotalScanGW!!)
                                         }
                                     } else if (tvTotalScanGW.text.equals("None") || tvTotalScanGW.text.equals("NONE")) {
                                         var scanItem = result.toString().split(",")[0]
@@ -254,7 +255,7 @@ class InventoryTransferItemAdapter(
 
                                     binding.edBatchCodeScan.setText("")
                                     binding.edBatchCodeScan.requestFocus()
-                                }catch (e:Exception){
+                                } catch (e: Exception) {
                                     e.printStackTrace()
                                 }
                             }
@@ -624,10 +625,10 @@ class InventoryTransferItemAdapter(
 
     //TODO scan item lines api here....
     private fun scanBatchLinesItem(
-        text: String,
+        batchCode: String,
         rvBatchItems: RecyclerView,
         position: Int,
-        itemCode: String?,
+        itemCodes: String?,
         tvOpenQty: TextView,
         tvTotalScannQty: TextView,
         tvTotalScanGw: TextView,
@@ -641,7 +642,7 @@ class InventoryTransferItemAdapter(
 
             val networkClient = NetworkClients.create(context)
 
-            networkClient.doGetBatchNumScanDetails("Batch eq '" + text.trim() + "'" + " and ItemCode eq '" + itemCode + "'")
+            networkClient.doGetBatchNumScanDetails("Batch eq '" + batchCode.trim() + "'" + " and ItemCode eq '" + itemCodes + "'")
                 .apply {
                     enqueue(object : Callback<ScanedOrderBatchedItems> {
                         @SuppressLint("SuspiciousIndentation")
@@ -652,20 +653,20 @@ class InventoryTransferItemAdapter(
                                     Log.e("response---------", response.body().toString())
 
                                     var responseModel = response.body()!!
+                                    val batchItemCode = responseModel.value[0].ItemCode
                                     if (responseModel.value.size > 0) {
 
-                                        Log.e("ItemCode==>", "" + responseModel.value[0].ItemCode)
+                                        Log.e("ItemCode==>", "BatchItemCode: $batchItemCode Line ItemCode: $itemCode" )
                                         itemPo = setScanDataOnItem(list, responseModel.value[0].ItemCode)
                                         Log.e("ItemPo==>", "" + itemPo)
                                     }
                                     Log.e("itemPo=>", itemPo.toString())
-
                                     var totalScanQty = tvTotalScannQty.text.toString()
                                     var total = totalScanQty.toIntOrNull() ?: 0
 
                                     if (responseModel.value.size == 0) {
                                         GlobalMethods.showError(context, "Batch quantity not found.")
-                                    } else if (itemPo == -1) {
+                                    } else if (batchItemCode != itemCode) {
                                         GlobalMethods.showError(context, "Item Code not matched")
                                     } else if (total >= list[itemPo].RemainingOpenQuantity.toDouble()) {
                                         GlobalMethods.showError(context, "Scanning completed for this Item")
@@ -678,7 +679,11 @@ class InventoryTransferItemAdapter(
                                             var modelResponse = responseModel.value
                                             Log.i(
                                                 "SCAN_ITEM", "doGetBatchNumScanDetails => Batch Details (${modelResponse.size}): ${toSimpleJson(modelResponse)}" +
-                                                        "\nscanedBatchedItemsList_gl (${scanedBatchedItemsList_gl.size}) before add batch details: ${toSimpleJson(scanedBatchedItemsList_gl)}"
+                                                        "\nscanedBatchedItemsList_gl (${scanedBatchedItemsList_gl.size}) before add batch details: ${
+                                                            toSimpleJson(
+                                                                scanedBatchedItemsList_gl
+                                                            )
+                                                        }"
                                             )
 
                                             scanedBatchedItemsList_gl.addAll(modelResponse)
@@ -706,10 +711,10 @@ class InventoryTransferItemAdapter(
 
                                             //if (itemList_gl.isNotEmpty()) {
                                             try {
-                                                Log.e("SCAN_ITEM", "Calling with batchCode=$text, itemCode=${itemCode}")
+                                                Log.e("SCAN_ITEM", "Calling with batchCode=$batchCode, itemCode=${itemCodes}")
                                                 getQuantityFromApi(
-                                                    text,
-                                                    itemCode.toString(),
+                                                    batchCode,
+                                                    itemCodes.toString(),
                                                     position,
                                                     stringList,
                                                     tvOpenQty,
@@ -799,8 +804,16 @@ class InventoryTransferItemAdapter(
 
     //TODO scan item lines api here....
     private fun getQuantityFromApi(
-        batchCode: String, itemCode: String, position: Int, stringList: ArrayList<String>,
-        tvOpenQty: TextView, tvTotalScannQty: TextView, tvTotalScanGw: TextView, rvBatchItems: RecyclerView, itemList_gl: ArrayList<ScanedOrderBatchedItems.Value>, newBatchItem: ScanedOrderBatchedItems.Value
+        batchCode: String,
+        itemCode: String,
+        position: Int,
+        stringList: ArrayList<String>,
+        tvOpenQty: TextView,
+        tvTotalScannQty: TextView,
+        tvTotalScanGw: TextView,
+        rvBatchItems: RecyclerView,
+        itemList_gl: ArrayList<ScanedOrderBatchedItems.Value>,
+        newBatchItem: ScanedOrderBatchedItems.Value
     ) {
         Log.e("SCAN_ITEM", "call getQuantityFromApi()")
         if (networkConnection.getConnectivityStatusBoolean(context)) {
@@ -809,7 +822,7 @@ class InventoryTransferItemAdapter(
             var apiConfig = ApiConstantForURL()
 
 
-            QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig,true)
+            QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig, true)
 
             val networkClient = QuantityNetworkClient.create(context)
             networkClient.getQuantityValue(sessionManagement.getCompanyDB(context)!!, batchCode, itemCode, sessionManagement.getWarehouseCode(context)!!)//AppConstants.COMPANY_DB,
@@ -997,7 +1010,15 @@ class InventoryTransferItemAdapter(
 
 
     //TODO scan item lines api here....
-    private fun scanSerialLineItem(text: String, rvBatchItems: RecyclerView, position: Int, itemCode: String?, tvOpenQty: TextView, tvTotalScannQty: TextView, tvTotalScanGw: TextView) {
+    private fun scanSerialLineItem(
+        text: String,
+        rvBatchItems: RecyclerView,
+        position: Int,
+        itemCode: String?,
+        tvOpenQty: TextView,
+        tvTotalScannQty: TextView,
+        tvTotalScanGw: TextView
+    ) {
         if (networkConnection.getConnectivityStatusBoolean(context)) {
             materialProgressDialog.show()
             var apiConfig = ApiConstantForURL()
@@ -1164,9 +1185,11 @@ class InventoryTransferItemAdapter(
                 ++scanCount;
                 list[itemPo].isScanned = scanCount
 
-                var data = ScanedOrderBatchedItems.Value("", itemCode, itemDesc, "", "", scanItem, "", "",
+                var data = ScanedOrderBatchedItems.Value(
+                    "", itemCode, itemDesc, "", "", scanItem, "", "",
                     "", "", "", 0L, "", "", 0.0, 0.0, 0.0, 0.0,
-                    0.0,  "", 0.0, "", 0.0, 0.0,"")
+                    0.0, "", 0.0, "", 0.0, 0.0, ""
+                )
 
                 var modelResponse = data
                 scanedBatchedItemsList_gl.addAll(listOf(modelResponse))
@@ -1568,7 +1591,13 @@ class InventoryTransferItemAdapter(
         }
     }
 
-    override fun onScannedItemClicked(etBatchQuantity: TextInputEditText, tvTotalScannQty: TextView, batchItem: ScanedOrderBatchedItems.Value, parentPosition: Int, batchItemPosition: Int) {
+    override fun onScannedItemClicked(
+        etBatchQuantity: TextInputEditText,
+        tvTotalScannQty: TextView,
+        batchItem: ScanedOrderBatchedItems.Value,
+        parentPosition: Int,
+        batchItemPosition: Int
+    ) {
 
         /*val itemCode = batchItem.ItemCode
         val batch = batchItem.Batch
