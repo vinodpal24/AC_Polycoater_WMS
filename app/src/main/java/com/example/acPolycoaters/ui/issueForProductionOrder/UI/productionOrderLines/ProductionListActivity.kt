@@ -133,7 +133,7 @@ class ProductionListActivity : AppCompatActivity() {
             isLastPage = false
             deliveryModelList_gl.clear()
             setDeliveryOrderAdapter()
-            loadDeliveryOrderListItems(page)
+            loadDeliveryOrderListItems(page, null)
             activityListBinding.rvProductionList.addOnScrollListener(object :
                 RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -150,7 +150,7 @@ class ProductionListActivity : AppCompatActivity() {
                             && totalItemCount >= pageSize
                         ) {
                             page++
-                            loadDeliveryOrderListItems(page)
+                            loadDeliveryOrderListItems(page, null)
                         }
                     }
                 }
@@ -336,7 +336,7 @@ class ProductionListActivity : AppCompatActivity() {
                                         }
                                         isLastPage = false
 
-                                    }else {
+                                    } else {
                                         activityListBinding.ivNoDataFound.visibility = View.VISIBLE
                                         activityListBinding.rvProductionList.visibility = View.GONE
                                     }
@@ -419,6 +419,7 @@ class ProductionListActivity : AppCompatActivity() {
                         startActivity(mainIntent)
                         finish()
                     }
+
                     else -> GlobalMethods.showError(this, mError.error.message.value)
                 }
             } catch (jsonEx: Exception) {
@@ -434,7 +435,8 @@ class ProductionListActivity : AppCompatActivity() {
 
 
     //todo DELIVERY ORDER API LIST ITEMS BIND....
-    fun loadDeliveryOrderListItems(page: Int) {
+    fun loadDeliveryOrderListItems(page: Int, docNum: String?) {
+        Log.i("DocNum", "Page: $page,QueryDocNum: $docNum")
         checkNetwoorkConnection.observe(this) { isConnected ->
 
             if (isConnected) {
@@ -446,8 +448,13 @@ class ProductionListActivity : AppCompatActivity() {
                 val networkClient = NetworkClients.create(this)
                 val bplId = if (Prefs.getString(AppConstants.BPLID, "").isNotEmpty()) Prefs.getString(AppConstants.BPLID, "") else ""
                 Log.i("BRANCH", "BPLId: $bplId")
+                val filterQuery = if (docNum.isNullOrEmpty()) {
+                    "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId"
+                } else {
+                    "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId and DocNum eq $docNum"
+                }
                 networkClient.deliveryOrder(
-                    "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId",
+                    filterQuery,
                     "DocNum desc",
                     skip, pageSize,
                 ).apply {
@@ -456,82 +463,108 @@ class ProductionListActivity : AppCompatActivity() {
                             call: Call<DeliveryModel>,
                             response: Response<DeliveryModel>
                         ) {
+
                             materialProgressDialog.dismiss()
+
                             try {
-                                if (response.isSuccessful) {
-                                    val listResponse = response.body()!!
-                                    /*val newItems = listResponse.value
+                                if (response.isSuccessful && response.body() != null) {
+                                    val newItems = response.body()!!.value
 
-                                    if (newItems.isNotEmpty()) {
-                                        val startPos = deliveryModelList_gl.size
-                                        deliveryModelList_gl.addAll(newItems)
-                                        Log.i("DELIVERY_ORDER", "Delivery Order List size : ${deliveryModelList_gl.size}")
-                                        deliveryAdapter.notifyItemRangeInserted(startPos, newItems.size)
-                                    } else {
-                                        isLastPage = true // no more data
-                                    }*/
+                                    runOnUiThread {
+                                        if (!docNum.isNullOrEmpty()) {
+                                            // Search mode
+                                            deliveryModelList_gl.clear()
+                                            deliveryModelList_gl.addAll(newItems)
+                                            activityListBinding.ivNoDataFound.visibility =
+                                                if (newItems.isEmpty()) View.VISIBLE else View.GONE
+                                            activityListBinding.rvProductionList.visibility =
+                                                if (newItems.isEmpty()) View.GONE else View.VISIBLE
 
-                                    val newItems = listResponse.value
-
-                                    if (newItems.isNotEmpty()) {
-                                        activityListBinding.ivNoDataFound.visibility = View.GONE
-                                        activityListBinding.rvProductionList.visibility = View.VISIBLE
-                                    } else {
-                                        activityListBinding.ivNoDataFound.visibility = View.VISIBLE
-                                        activityListBinding.rvProductionList.visibility = View.GONE
-                                    }
-
-                                    // Filter out duplicates by DocEntry
-                                    val uniqueItems = newItems.filter { newItem ->
-                                        deliveryModelList_gl.none { existing -> existing.DocEntry == newItem.DocEntry }
-                                    }
-
-                                    if (uniqueItems.isNotEmpty()) {
-
-                                        val startPos = deliveryModelList_gl.size
-                                        deliveryModelList_gl.addAll(uniqueItems)
-                                        Log.i("DELIVERY_ORDER", "Delivery Order List size : ${deliveryModelList_gl.size}")
-                                        deliveryAdapter.notifyItemRangeInserted(startPos, uniqueItems.size)
-                                    } else {
-                                        isLastPage = true // no unique items left
-                                    }
-                                    isLastPage = false
-                                } else {
-                                    isLastPage = true
-                                    //handleErrorResponse(response)
-                                    materialProgressDialog.dismiss()
-                                    val gson1 = GsonBuilder().create()
-                                    var mError: OtpErrorModel
-                                    try {
-                                        val s = response.errorBody()!!.string()
-                                        mError = gson1.fromJson(s, OtpErrorModel::class.java)
-                                        if (mError.error.code == 400) {
-                                            GlobalMethods.showError(
-                                                this@ProductionListActivity,
-                                                mError.error.message.value
-                                            )
+                                            if (::deliveryAdapter.isInitialized) {
+                                                deliveryAdapter.setFilteredItems(ArrayList(newItems))
+                                            } else {
+                                                setDeliveryOrderAdapter()
+                                            }
+                                        } else {
+                                            // Normal pagination mode
+                                            val uniqueItems = newItems.filter { newItem ->
+                                                deliveryModelList_gl.none { it.DocEntry == newItem.DocEntry }
+                                            }
+                                            deliveryModelList_gl.addAll(uniqueItems)
+                                            deliveryAdapter.notifyDataSetChanged()
                                         }
-                                        if (mError.error.code == 306 && mError.error.message.value != null) {
-                                            GlobalMethods.showError(
-                                                this@ProductionListActivity,
-                                                mError.error.message.value
-                                            )
-                                            val mainIntent = Intent(
-                                                this@ProductionListActivity,
-                                                LoginActivity::class.java
-                                            )
-                                            startActivity(mainIntent)
-                                            finish()
-                                        }
-                                    } catch (e: IOException) {
-                                        e.printStackTrace()
                                     }
                                 }
+                                else {
+                                    handleErrorResponse(response)
+                                }
+
+
+                                /*if (response.isSuccessful) {
+                                val listResponse = response.body()!!
+
+                                val newItems = listResponse.value
+
+                                if (newItems.isNotEmpty()) {
+                                    activityListBinding.ivNoDataFound.visibility = View.GONE
+                                    activityListBinding.rvProductionList.visibility = View.VISIBLE
+                                } else {
+                                    activityListBinding.ivNoDataFound.visibility = View.VISIBLE
+                                    activityListBinding.rvProductionList.visibility = View.GONE
+                                }
+
+                                // Filter out duplicates by DocEntry
+                                val uniqueItems = newItems.filter { newItem ->
+                                    deliveryModelList_gl.none { existing -> existing.DocEntry == newItem.DocEntry }
+                                }
+
+                                if (uniqueItems.isNotEmpty()) {
+
+                                    val startPos = deliveryModelList_gl.size
+                                    deliveryModelList_gl.addAll(uniqueItems)
+                                    Log.i("DELIVERY_ORDER", "Delivery Order List size : ${deliveryModelList_gl.size}")
+                                    deliveryAdapter.notifyItemRangeInserted(startPos, uniqueItems.size)
+                                } else {
+                                    isLastPage = true // no unique items left
+                                }
+                                isLastPage = false
+                            } else {
+                                isLastPage = true
+                                //handleErrorResponse(response)
+                                materialProgressDialog.dismiss()
+                                val gson1 = GsonBuilder().create()
+                                var mError: OtpErrorModel
+                                try {
+                                    val s = response.errorBody()!!.string()
+                                    mError = gson1.fromJson(s, OtpErrorModel::class.java)
+                                    if (mError.error.code == 400) {
+                                        GlobalMethods.showError(
+                                            this@ProductionListActivity,
+                                            mError.error.message.value
+                                        )
+                                    }
+                                    if (mError.error.code == 306 && mError.error.message.value != null) {
+                                        GlobalMethods.showError(
+                                            this@ProductionListActivity,
+                                            mError.error.message.value
+                                        )
+                                        val mainIntent = Intent(
+                                            this@ProductionListActivity,
+                                            LoginActivity::class.java
+                                        )
+                                        startActivity(mainIntent)
+                                        finish()
+                                    }
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
+                                }
+                            }*/
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             } finally {
                                 isLoading = false
                             }
+
                         }
 
                         override fun onFailure(call: Call<DeliveryModel>, t: Throwable) {
@@ -627,7 +660,8 @@ class ProductionListActivity : AppCompatActivity() {
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                return false
+                loadDeliveryOrderListItems(page, query)
+                return true
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
@@ -696,7 +730,7 @@ class ProductionListActivity : AppCompatActivity() {
             deliveryAdapter.notifyDataSetChanged()
             page = 0
             isLastPage = false
-            loadDeliveryOrderListItems(page)
+            loadDeliveryOrderListItems(page, null)
         } else if (::issueOderAdapter.isInitialized) {
             productionListModel_gl.clear()
             issueOderAdapter.notifyDataSetChanged()

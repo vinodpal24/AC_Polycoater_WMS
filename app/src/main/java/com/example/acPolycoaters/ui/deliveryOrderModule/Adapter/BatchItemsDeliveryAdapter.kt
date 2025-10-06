@@ -12,17 +12,31 @@ import com.example.acPolycoaters.databinding.BatchItemsScannedLayoutDeliveryBind
 
 class BatchItemsDeliveryAdapter(
     private val parentPosition: Int,
-    private val context: Context, private val scanedBatchedItemsList_gl: ArrayList<ScanedOrderBatchedItems.Value>,
-    private val quantityHashMap: ArrayList<String>, private val flag: String, private val tvTotalScannQty: TextView, private val rvBatchItems: RecyclerView
+    private val context: Context,
+    private val scanedBatchedItemsList_gl: ArrayList<ScanedOrderBatchedItems.Value>,
+    private val quantityHashMap: ArrayList<String>,
+    private val flag: String,
+    private val tvTotalScannQty: TextView,
+    private val rvBatchItems: RecyclerView,
+    private val tvNoOfRolls: TextView
 ) : RecyclerView.Adapter<BatchItemsDeliveryAdapter.ViewHolder>() {
 
 
     private var onDeleteItemClick: OnDeleteItemClickListener? = null
+
     interface OnDeleteItemClickListener {
-        fun onDeleteItemClick(parentPosition: Int, list: ArrayList<ScanedOrderBatchedItems.Value>, quantityHashMap: ArrayList<String>, pos: Int,tvTotalScannQty:TextView,rvBatchItems:RecyclerView)
+        fun onDeleteItemClick(
+            parentPosition: Int,
+            list: ArrayList<ScanedOrderBatchedItems.Value>,
+            quantityHashMap: ArrayList<String>,
+            pos: Int,
+            tvTotalScannQty: TextView,
+            rvBatchItems: RecyclerView,
+            tvNoOfRolls: TextView
+        )
     }
 
-    interface OnDeleteItemRefreshListener{
+    interface OnDeleteItemRefreshListener {
         fun onDeleteItemRefresh(pos: Int)
     }
 
@@ -73,7 +87,7 @@ class BatchItemsDeliveryAdapter(
             tvBatchQuantity.text = qtyFormatted
 
             ivDelete.setOnClickListener {
-                onDeleteItemClick?.onDeleteItemClick(parentPosition,scanedBatchedItemsList_gl, quantityHashMap, position, tvTotalScannQty,rvBatchItems)
+                onDeleteItemClick?.onDeleteItemClick(parentPosition, scanedBatchedItemsList_gl, quantityHashMap, position, tvTotalScannQty, rvBatchItems,tvNoOfRolls)
             }
 
             Log.i("SCAN_QTY", "Item [$position] → Qty Raw: $qtyRaw | Formatted: $qtyFormatted")

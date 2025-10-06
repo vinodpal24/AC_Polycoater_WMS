@@ -73,6 +73,7 @@ class DocumentOrderLineAdapter(
     var U_gsmso = 0.0
     lateinit var tvTotalScanQty: TextView
     lateinit var tvTotalScanGW: TextView
+    lateinit var tvNoOfRolls: TextView
 
     init {
         sessionManagement = SessionManagement(context)
@@ -96,7 +97,7 @@ class DocumentOrderLineAdapter(
                 binding.tvWidth.text = this.Factor1.toString()
                 binding.tvLength.text = this.Factor2.toString()
                 binding.tvGSM.text = this.U_GSMSO.toString()
-
+                tvNoOfRolls = binding.tvNoOfRolls
                 binding.trTotalScanFields.visibility = View.VISIBLE
 
 
@@ -121,7 +122,17 @@ class DocumentOrderLineAdapter(
                 }
                 Log.e("SCAN_QTY", "quantityHashMap onBindViewHolder => ${quantityHashMap.get("Item$position")}")
 
-
+                binding.switchMannualBatch.setOnCheckedChangeListener { compoundButton, isChecked ->
+                    if (isChecked) {
+                        binding.btnMannualBatch.isEnabled = true
+                        binding.etMannualBatch.isEnabled = true
+                        binding.btnMannualBatch.isClickable = true
+                    } else {
+                        binding.btnMannualBatch.isEnabled = false
+                        binding.etMannualBatch.isEnabled = false
+                        binding.btnMannualBatch.isClickable = false
+                    }
+                }
                 //TODO for manual batch entry..
                 binding.edBatchCodeScan.setOnEditorActionListener { v, actionId, event ->
                     if (actionId == KeyEvent.ACTION_DOWN && actionId == KeyEvent.KEYCODE_ENTER || actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_SEND) {
@@ -131,10 +142,10 @@ class DocumentOrderLineAdapter(
                             //TODO batch scan api..
                             Log.e("SCAN_QTY", "edBatchCodeScan.setOnEditorActionListener => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
                             //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
-                                scanOrderLinesItem(
-                                    text, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
-                                    this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw
-                                )
+                            scanOrderLinesItem(
+                                text, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
+                                this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
+                            )
                             /*} else {
                                 GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
                             }*/
@@ -149,7 +160,29 @@ class DocumentOrderLineAdapter(
                 }
 
                 Log.d("scanner_type===>", sessionManagement.getScannerType(context).toString())
+                binding.btnMannualBatch.setOnClickListener {
+                    var text = binding.edBatchCodeScan.text.toString().trim()
+                    recyclerView = binding.rvBatchItems
+                    itemCode = this.ItemCode
+                    tvOpenQty = binding.tvOpenQty
+                    tvTotalScanQty = binding.tvTotalScannQty
+                    tvTotalScanGW = binding.tvTotalScanGw
+                    tvNoOfRolls = binding.tvNoOfRolls
+                    width = this.Factor1
+                    U_gsmso = this.U_GSMSO
+                    remainingOpenQuantity = this.RemainingOpenQuantity
+                    val batchCode = binding.etMannualBatch.text.toString()
+                    if (checkDuplicate(hashMap.get("Item" + position)!!, batchCode)) {
+                        //todo scan call api here...
+                        Log.e("SCAN_QTY", "edBatchCodeScan.setOnKeyListener - if => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
+                        //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
+                        scanOrderLinesItem(
+                            binding.etMannualBatch.text.toString(), binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
+                            this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
+                        )
+                    }
 
+                }
                 //todo if leaser type choose..
                 if (sessionManagement.getScannerType(context) == "LEASER") { //sessionManagement.getLeaserCheck()!! == 1 && sessionManagement.getQRScannerCheck()!! == 0
                     binding.ivScanBatchCode.visibility = View.GONE
@@ -193,10 +226,10 @@ class DocumentOrderLineAdapter(
                                     //todo scan call api here...
                                     Log.e("SCAN_QTY", "edBatchCodeScan.setOnKeyListener - if => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
                                     //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
-                                        scanOrderLinesItem(
-                                            x, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
-                                            this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw
-                                        )
+                                    scanOrderLinesItem(
+                                        x, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
+                                        this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
+                                    )
 
                                     /*} else {
                                         GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
@@ -207,10 +240,10 @@ class DocumentOrderLineAdapter(
                                     //todo scan call api here...
                                     Log.e("SCAN_QTY", "edBatchCodeScan.setOnKeyListener - else => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
                                     //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
-                                        scanOrderLinesItem(
-                                            text, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
-                                            this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw
-                                        )
+                                    scanOrderLinesItem(
+                                        text, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
+                                        this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
+                                    )
                                     /*} else {
                                         GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
                                     }*/
@@ -236,6 +269,7 @@ class DocumentOrderLineAdapter(
                         tvOpenQty = binding.tvOpenQty
                         tvTotalScanQty = binding.tvTotalScannQty
                         tvTotalScanGW = binding.tvTotalScanGw
+                        tvNoOfRolls = binding.tvNoOfRolls
                         width = this.Factor1
                         U_gsmso = this.U_GSMSO
                         remainingOpenQuantity = this.RemainingOpenQuantity
@@ -260,18 +294,18 @@ class DocumentOrderLineAdapter(
                                 //todo scan call api here...
                                 Log.e("SCAN_QTY", "edBatchCodeScan.setOnEditorActionListener=> SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
                                 //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
-                                    scanOrderLinesItem(
-                                        text,
-                                        binding.rvBatchItems,
-                                        adapterPosition,
-                                        this.ItemCode,
-                                        binding.tvOpenQty,
-                                        RemainingOpenQuantity,
-                                        this.Factor1,
-                                        this.U_GSMSO,
-                                        binding.tvTotalScannQty,
-                                        binding.tvTotalScanGw
-                                    )
+                                scanOrderLinesItem(
+                                    text,
+                                    binding.rvBatchItems,
+                                    adapterPosition,
+                                    this.ItemCode,
+                                    binding.tvOpenQty,
+                                    RemainingOpenQuantity,
+                                    this.Factor1,
+                                    this.U_GSMSO,
+                                    binding.tvTotalScannQty,
+                                    binding.tvTotalScanGw, binding.tvNoOfRolls
+                                )
                                 /*} else {
                                     GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
                                 }*/
@@ -304,7 +338,7 @@ class DocumentOrderLineAdapter(
     //TODO scan item lines api here....
     private fun scanOrderLinesItem(
         text: String, rvBatchItems: RecyclerView, position: Int, itemCode: String?, tvOpenQty: TextView,
-        remainingOpenQuantity: Double, factor1: Double, uGsm: Double, tvTotalScannQty: TextView, tvTotalScanGw: TextView
+        remainingOpenQuantity: Double, factor1: Double, uGsm: Double, tvTotalScannQty: TextView, tvTotalScanGw: TextView, tvNoOfRolls: TextView
     ) {
         if (networkConnection.getConnectivityStatusBoolean(context)) {
             materialProgressDialog.show()
@@ -337,13 +371,26 @@ class DocumentOrderLineAdapter(
                                         stringList.addAll(quantityHashMap.get("Item" + position)!!)
 
                                         itemList_gl.add(responseModel.value[0])
-                                        Log.e("SCAN_QTY", "itemList_gl after add hashMap n doGetBatchNumScanDetails response => ${itemList_gl.size}\nResponse => ${toSimpleJson(responseModel.value)}")
+                                        Log.e(
+                                            "SCAN_QTY",
+                                            "itemList_gl after add hashMap n doGetBatchNumScanDetails response => ${itemList_gl.size}\nResponse => ${toSimpleJson(responseModel.value)}"
+                                        )
                                         if (!itemList_gl.isNullOrEmpty()) {
 
                                             Log.e("list_size-----", itemList_gl.size.toString())
 
                                             //todo quantity..
-                                            getQuantityFromApi(text, itemList_gl[0].ItemCode, position, stringList, tvOpenQty, tvTotalScannQty, tvTotalScanGw, rvBatchItems, itemList_gl)
+                                            getQuantityFromApi(
+                                                text,
+                                                itemList_gl[0].ItemCode,
+                                                position,
+                                                stringList,
+                                                tvOpenQty,
+                                                tvTotalScannQty,
+                                                tvTotalScanGw,
+                                                rvBatchItems,
+                                                itemList_gl, tvNoOfRolls
+                                            )
                                         }
 
                                         /*} else {
@@ -403,7 +450,6 @@ class DocumentOrderLineAdapter(
     }
 
 
-
     //TODO scan item lines api here....
     private fun getQuantityFromApi(
         batchCode: String,
@@ -414,12 +460,13 @@ class DocumentOrderLineAdapter(
         tvTotalScannQty: TextView,
         tvTotalScanGw: TextView,
         rvBatchItems: RecyclerView,
-        itemList_gl: ArrayList<ScanedOrderBatchedItems.Value>
+        itemList_gl: ArrayList<ScanedOrderBatchedItems.Value>,
+        tvNoOfRolls: TextView
     ) {
         if (networkConnection.getConnectivityStatusBoolean(context)) {
             materialProgressDialog.show()
             var apiConfig = ApiConstantForURL()
-            QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig,true)
+            QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig, true)
             val networkClient = QuantityNetworkClient.create(context)
             networkClient.getQuantityValue(sessionManagement.getCompanyDB(context)!!, batchCode, itemCode, sessionManagement.getWarehouseCode(context)!!)
                 .apply {
@@ -433,7 +480,12 @@ class DocumentOrderLineAdapter(
                                     var responseModel = response.body()!!
                                     if (responseModel.value.size > 0 && !responseModel.value.isNullOrEmpty()) {
 
-                                        Log.e("SCAN_QTY", "Success => ${responseModel.value}\nquantityHashMap before add => $quantityHashMap\nitemList_gl size(${itemList_gl.size}) => ${toSimpleJson(itemList_gl)}")
+                                        Log.e(
+                                            "SCAN_QTY",
+                                            "Success => ${responseModel.value}\nquantityHashMap before add => $quantityHashMap\nitemList_gl size(${itemList_gl.size}) => ${
+                                                toSimpleJson(itemList_gl)
+                                            }"
+                                        )
                                         /*val quantity = responseModel.value[0].Quantity.toDoubleOrNull() ?: 0.0
                                         if (quantity > 0.0) {
                                             stringList.add(responseModel.value[0].Quantity)
@@ -518,7 +570,7 @@ class DocumentOrderLineAdapter(
 
                                             if (hasValidQty) {
                                                 hashMap["Item$position"] = itemList_gl
-
+                                                tvNoOfRolls.text = hashMap["Item$position"]?.size.toString()
                                                 val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(context)
                                                 rvBatchItems.layoutManager = layoutManager
                                                 batchItemsAdapter = BatchItemsDeliveryAdapter(
@@ -528,7 +580,7 @@ class DocumentOrderLineAdapter(
                                                     quantityHashMap["Item$position"]!!,
                                                     "SalesOrder",
                                                     tvTotalScannQty,
-                                                    rvBatchItems
+                                                    rvBatchItems, tvNoOfRolls
                                                 )
 
                                                 Log.e("SCAN_QTY", "quantityHashMap in hasValidQty => $quantityHashMap")
@@ -541,6 +593,7 @@ class DocumentOrderLineAdapter(
                                                 val totalGrossWeight = GlobalMethods.changeDecimal(
                                                     GlobalMethods.sumBatchGrossWeight(position, hashMap["Item$position"]!!).toString()
                                                 )
+                                                tvNoOfRolls.text = hashMap["Item$position"]?.size.toString()
                                                 tvTotalScanGw.text = totalGrossWeight
 
                                             } else {
@@ -627,7 +680,15 @@ class DocumentOrderLineAdapter(
 
 
     //TODO get quantity for batch code...
-    private fun getQuanity(batchCode: String, itemCode: String, position: Int, stringList: ArrayList<String>, tvOpenQty: TextView, remainingOpenQuantity: Double, tvTotalScannQty: TextView) {
+    private fun getQuanity(
+        batchCode: String,
+        itemCode: String,
+        position: Int,
+        stringList: ArrayList<String>,
+        tvOpenQty: TextView,
+        remainingOpenQuantity: Double,
+        tvTotalScannQty: TextView
+    ) {
         if (connection != null) {
             var statement: Statement? = null
             try {
@@ -671,7 +732,8 @@ class DocumentOrderLineAdapter(
         quantityHashMap1: ArrayList<String>,
         childPosition: Int,
         tvTotalScannQty: TextView,
-        rvBatchItems: RecyclerView
+        rvBatchItems: RecyclerView,
+        tvNoOfRolls: TextView
     ) {
         if (childPosition < 0 || childPosition >= scanList.size || childPosition >= quantityHashMap1.size) {
             Log.e("SCAN_QTY", "Invalid position: $childPosition")
@@ -735,6 +797,7 @@ class DocumentOrderLineAdapter(
                         // You have direct access to tvTotalScannQty and tvTotalScanGw here!
                         val updatedScannedQty = GlobalMethods.sumBatchQuantity(parentPosition, scannedQuantitiesForParent)
                         tvTotalScannQty.text = updatedScannedQty.toString()
+                        tvNoOfRolls.text = hashMap["Item$parentPosition"]?.size.toString()
 
                         Log.d("DELETE_DEBUG", "Parent totals updated: Qty=${tvTotalScannQty.text}")
 
@@ -776,7 +839,19 @@ class DocumentOrderLineAdapter(
             if (checkDuplicate(hashMap.get("Item" + pos)!!, result.toString().split(",")[0])) {
                 Log.e("SCAN_QTY", "onActivityResult => SCAN QTY: ${tvTotalScanQty.text}, OPEN QTY: ${tvOpenQty.text}")
                 //if (tvTotalScanQty.text.toString().toDouble() <= tvOpenQty.text.toString().toDouble()) {
-                    scanOrderLinesItem(result.toString().split(",")[0], recyclerView, pos, itemCode, tvOpenQty, remainingOpenQuantity, width, U_gsmso, tvTotalScanQty, tvTotalScanGW)
+                scanOrderLinesItem(
+                    result.toString().split(",")[0],
+                    recyclerView,
+                    pos,
+                    itemCode,
+                    tvOpenQty,
+                    remainingOpenQuantity,
+                    width,
+                    U_gsmso,
+                    tvTotalScanQty,
+                    tvTotalScanGW,
+                    tvNoOfRolls
+                )
                 /*} else {
                     Log.e("SCAN_QTY", "onActivityResult else => Total scanned quantity can't be greater than open quantity")
                     GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
