@@ -220,35 +220,47 @@ class DocumentOrderLineAdapter(
 
                             var text = binding.edBatchCodeScan.text.toString().trim()
                             var x = text
-                            if (x.contains(",")) { //todo validation for scan QR code from laser device and get batch code.
-                                x = x.split(",")[0]
-                                if (checkDuplicate(hashMap.get("Item" + position)!!, x)) {
-                                    //todo scan call api here...
-                                    Log.e("SCAN_QTY", "edBatchCodeScan.setOnKeyListener - if => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
-                                    //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
-                                    scanOrderLinesItem(
-                                        x, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
-                                        this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
-                                    )
+                            val itemCode = x.split(",")[1]
+                            Log.e("SCAN_QTY", "Scan Data : $text, scanItemCode: $itemCode ListItemCode : ${this.ItemCode}")
+                            val isValidItemCode = itemCode == this.ItemCode
+                            if (isValidItemCode) {
+                                if (x.contains(",")) { //todo validation for scan QR code from laser device and get batch code.
+                                    x = x.split(",")[0]
 
-                                    /*} else {
-                                        GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
-                                    }*/
+                                    if (checkDuplicate(hashMap.get("Item" + position)!!, x)) {
+                                        //todo scan call api here...
+                                        Log.e("SCAN_QTY", "edBatchCodeScan.setOnKeyListener - if => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
+                                        //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
+                                        scanOrderLinesItem(
+                                            x, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
+                                            this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
+                                        )
+
+                                        /*} else {
+                                            GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
+                                        }*/
+                                    }
+                                } else {
+                                    if (checkDuplicate(hashMap.get("Item" + position)!!, text)) {
+                                        //todo scan call api here...
+                                        Log.e(
+                                            "SCAN_QTY",
+                                            "edBatchCodeScan.setOnKeyListener - else => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}"
+                                        )
+                                        //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
+                                        scanOrderLinesItem(
+                                            text, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
+                                            this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
+                                        )
+                                        /*} else {
+                                            GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
+                                        }*/
+                                    }
                                 }
                             } else {
-                                if (checkDuplicate(hashMap.get("Item" + position)!!, text)) {
-                                    //todo scan call api here...
-                                    Log.e("SCAN_QTY", "edBatchCodeScan.setOnKeyListener - else => SCAN QTY: ${binding.tvTotalScannQty.text}, OPEN QTY: ${binding.tvOpenQty.text}")
-                                    //if (binding.tvTotalScannQty.text.toString() <= binding.tvOpenQty.text.toString()) {
-                                    scanOrderLinesItem(
-                                        text, binding.rvBatchItems, adapterPosition, this.ItemCode, binding.tvOpenQty, this.RemainingOpenQuantity,
-                                        this.Factor1, this.U_GSMSO, binding.tvTotalScannQty, binding.tvTotalScanGw, binding.tvNoOfRolls
-                                    )
-                                    /*} else {
-                                        GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
-                                    }*/
-                                }
+                                GlobalMethods.showError(context, "Please scan correct item code.")
                             }
+
                             binding.edBatchCodeScan.setText("")
                             binding.edBatchCodeScan.requestFocus()
                         }
@@ -835,28 +847,35 @@ class DocumentOrderLineAdapter(
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val result = data?.getStringExtra("batch_code")
             Log.i("SCAN_QTY", "Scan Data: $result")
+            val scanItemCode = result?.split(",")?.get(1)
             //todo spilt string and get string at 0 index...
-            if (checkDuplicate(hashMap.get("Item" + pos)!!, result.toString().split(",")[0])) {
-                Log.e("SCAN_QTY", "onActivityResult => SCAN QTY: ${tvTotalScanQty.text}, OPEN QTY: ${tvOpenQty.text}")
-                //if (tvTotalScanQty.text.toString().toDouble() <= tvOpenQty.text.toString().toDouble()) {
-                scanOrderLinesItem(
-                    result.toString().split(",")[0],
-                    recyclerView,
-                    pos,
-                    itemCode,
-                    tvOpenQty,
-                    remainingOpenQuantity,
-                    width,
-                    U_gsmso,
-                    tvTotalScanQty,
-                    tvTotalScanGW,
-                    tvNoOfRolls
-                )
-                /*} else {
-                    Log.e("SCAN_QTY", "onActivityResult else => Total scanned quantity can't be greater than open quantity")
-                    GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
-                }*/
+            val isValidItemCode = scanItemCode == itemCode
+            if (isValidItemCode) {
+                if (checkDuplicate(hashMap.get("Item" + pos)!!, result.toString().split(",")[0])) {
+                    Log.e("SCAN_QTY", "onActivityResult => SCAN QTY: ${tvTotalScanQty.text}, OPEN QTY: ${tvOpenQty.text}")
+                    //if (tvTotalScanQty.text.toString().toDouble() <= tvOpenQty.text.toString().toDouble()) {
+                    scanOrderLinesItem(
+                        result.toString().split(",")[0],
+                        recyclerView,
+                        pos,
+                        itemCode,
+                        tvOpenQty,
+                        remainingOpenQuantity,
+                        width,
+                        U_gsmso,
+                        tvTotalScanQty,
+                        tvTotalScanGW,
+                        tvNoOfRolls
+                    )
+                    /*} else {
+                        Log.e("SCAN_QTY", "onActivityResult else => Total scanned quantity can't be greater than open quantity")
+                        GlobalMethods.showError(context, "Total scanned quantity can't be greater than open quantity")
+                    }*/
+                }
+            } else {
+                GlobalMethods.showError(context, "Please scan correct item code.")
             }
+
 
         }
     }
