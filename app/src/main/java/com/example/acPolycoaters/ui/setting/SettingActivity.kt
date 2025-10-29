@@ -21,6 +21,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import com.example.acPolycoaters.Global_Classes.AppConstants
+import com.example.acPolycoaters.Global_Classes.AppConstants.SCAN_TYPE
 import com.example.acPolycoaters.Global_Classes.GlobalMethods
 import com.example.acPolycoaters.Global_Classes.GlobalMethods.handleFailureError
 import com.example.acPolycoaters.Global_Classes.MaterialProgressDialog
@@ -89,6 +90,7 @@ class SettingActivity : AppCompatActivity() {
         sessionManagement = SessionManagement(this)
         //sessionManagement.setScannerType(this, "QR_SCANNER")
         binding.tvChooseScannerType.text = if(sessionManagement.getScannerType(this)=="LEASER") "Selected Scanner is Lesar Scanner" else "Selected Scanner is Camera Scanner"
+        binding.ivScanType.setImageResource(if(sessionManagement.getScannerType(this)=="LEASER") R.drawable.img_scanner else R.drawable.ic_baseline_qr_code_scanner_24 )
         callGetBranchList()
         setRowItemSpinner(items)
     }
@@ -334,10 +336,12 @@ class SettingActivity : AppCompatActivity() {
             when (checkedId) {
                 R.id.radioLaser -> {
                     radioLaser.isChecked = true
+                    SCAN_TYPE = "L"
                 }
 
                 R.id.radioQrScanner -> {
                     radioQrScanner.isChecked = true
+                    SCAN_TYPE = "S"
                 }
             }
             /*  if (radioButton != null && checkedId != -1) {
@@ -350,22 +354,25 @@ class SettingActivity : AppCompatActivity() {
         //todo validation for toggle..
         if (sessionManagement.getScannerType(this) == "LEASER") {
             radioLaser.isChecked = true
+            SCAN_TYPE = "L"
         } else if (sessionManagement.getScannerType(this) == "QR_SCANNER") {
             radioQrScanner.isChecked = true
+            SCAN_TYPE = "S"
         }
 
         //todo go btn..
         goBtn?.setOnClickListener {
-            if (checkGender.equals("L")) {
+            if (SCAN_TYPE == "L") {
 //                sessionManagement.setLaser(1)
 //                sessionManagement.setQRScanner(0)
                 sessionManagement.setScannerType(this, "LEASER")
-            } else if (checkGender.equals("S")) {
+            } else if (SCAN_TYPE == "S") {
 //                sessionManagement.setLaser(0)
 //                sessionManagement.setQRScanner(1)
                 sessionManagement.setScannerType(this, "QR_SCANNER")
             }
             binding.tvChooseScannerType.text = if(sessionManagement.getScannerType(this)=="LEASER") "Selected Scanner is Lesar Scanner" else "Selected Scanner is Camera Scanner"
+            binding.ivScanType.setImageResource(if(sessionManagement.getScannerType(this)=="LEASER") R.drawable.img_scanner else R.drawable.ic_baseline_qr_code_scanner_24 )
             builder.dismiss()
         }
 

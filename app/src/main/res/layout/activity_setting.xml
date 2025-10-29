@@ -46,22 +46,40 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <TextView
-                android:id="@+id/tvChooseScannerType"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:visibility="visible"
-                android:layout_height="@dimen/size_40"
-                android:layout_marginHorizontal="@dimen/size_20"
-                android:layout_marginTop="@dimen/size_20"
-                android:background="@drawable/border_outline_shape_setting"
-                android:drawableEnd="@drawable/ic_right_arrow"
-                android:drawablePadding="@dimen/size_8"
-                android:drawableTint="@color/lightGrey"
-                android:gravity="center_vertical"
-                android:textSize="@dimen/text_size_11"
-                android:paddingStart="@dimen/size_15"
-                android:text="Choose scanner type"
-                android:textColor="@color/black" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/size_20">
+                <TextView
+                    android:id="@+id/tvChooseScannerType"
+                    android:layout_width="match_parent"
+                    android:visibility="visible"
+                    android:layout_height="@dimen/size_40"
+                    android:layout_marginHorizontal="@dimen/size_20"
+                    android:background="@drawable/border_outline_shape_setting"
+                    android:drawableEnd="@drawable/ic_right_arrow"
+                    android:drawablePadding="@dimen/size_8"
+                    android:drawableTint="@color/lightGrey"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/text_size_11"
+                    android:paddingStart="@dimen/size_15"
+                    android:text="Choose scanner type"
+                    android:textColor="@color/black"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <ImageView
+                    android:id="@+id/ivScanType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="@dimen/size_35"
+                    android:src="@drawable/ic_baseline_qr_code_scanner_24"
+                    app:layout_constraintBottom_toBottomOf="@+id/tvChooseScannerType"
+                    app:layout_constraintEnd_toEndOf="@+id/tvChooseScannerType"
+                    app:layout_constraintTop_toTopOf="@+id/tvChooseScannerType" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
             <TextView

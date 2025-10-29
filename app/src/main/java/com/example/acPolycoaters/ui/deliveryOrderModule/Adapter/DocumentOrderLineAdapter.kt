@@ -875,8 +875,6 @@ class DocumentOrderLineAdapter(
             } else {
                 GlobalMethods.showError(context, "Please scan correct item code.")
             }
-
-
         }
     }
 

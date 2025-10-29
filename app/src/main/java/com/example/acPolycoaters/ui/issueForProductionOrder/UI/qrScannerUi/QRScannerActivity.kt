@@ -117,7 +117,7 @@ class QRScannerActivity : AppCompatActivity() {
                 for (barcode in barcodes) {
                     barcode.rawValue?.let { value ->
                         vibrateDevice()
-                        Toast.makeText(this, "Scanned: $value", Toast.LENGTH_LONG).show()
+                        //Toast.makeText(this, "Scanned: $value", Toast.LENGTH_LONG).show()
 
                         val intent = Intent()
                         intent.putExtra("batch_code", value)

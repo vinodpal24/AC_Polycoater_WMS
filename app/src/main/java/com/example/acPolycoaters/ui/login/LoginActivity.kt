@@ -109,7 +109,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setStaticDbName() {
-        val dbNames = arrayListOf("ACPL_LIVE_NEW", "TEST_03052025", "TEST_26062025", "TEST_18082025","TEST_ACPL_24092025")
+        val dbNames = arrayListOf("ACPL_LIVE_NEW", "TEST_03052025", "TEST_26062025", "TEST_18082025","TEST_ACPL_24092025","TEST_09102025")
 
         val adapter = ArrayAdapter(
             this@LoginActivity,

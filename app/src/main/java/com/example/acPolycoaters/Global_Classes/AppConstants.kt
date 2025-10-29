@@ -35,6 +35,8 @@ object AppConstants {
     var INVENTORY_TRANSFER_STANDALONE = "INVENTORY_TRANSFER_STANDALONE"
     var SALE_TO_DELIVERY="SALE_TO_DELIVERY"
 
+    var SCAN_TYPE = "SCAN_TYPE"
+
     //todo SQL server credentials..
     const val IP = "220.158.165.54"
 
