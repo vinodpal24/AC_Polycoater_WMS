@@ -118,6 +118,10 @@ class DeliveryDocumentLineActivity : AppCompatActivity(), DocumentOrderLineAdapt
             onBackPressed()
         }
 
+        deliveryOrderBinding.etDocDateNew.setOnClickListener {
+            GlobalMethods.disablePastDates(this@DeliveryDocumentLineActivity, deliveryOrderBinding.etDocDateNew)
+        }
+
 
     }
 
@@ -244,16 +248,20 @@ class DeliveryDocumentLineActivity : AppCompatActivity(), DocumentOrderLineAdapt
     //todo here saving order lines items of order...
     private fun saveDeliveryOrderItem() {
         if (networkConnection.getConnectivityStatusBoolean(applicationContext)) {
+            if (deliveryOrderBinding.etDocDateNew.text.toString().trim().isEmpty() ) {
+                Toast.makeText(this@DeliveryDocumentLineActivity, "Please enter doc date", Toast.LENGTH_SHORT).show()
+                return
+            }
 
             var docDate = deliveryValueList[0].DocDate
-
+            val docDateNew = GlobalMethods.convert_dd_MM_yyyy_into_yyyy_MM_dd(deliveryOrderBinding.etDocDateNew.text.toString().trim())
             var series = getSeriesValue(docDate)
             val bplId = if (Prefs.getString(AppConstants.BPLID, "").isNotEmpty()) Prefs.getString(AppConstants.BPLID, "") else ""
 
             var postedJson: JsonObject = JsonObject()
             postedJson.addProperty("CardCode", deliveryValueList[0].CardCode)
             postedJson.addProperty("BPL_IDAssignedToInvoice", bplId)
-            postedJson.addProperty("DocDate", docDate) //todo current date will send here---
+            postedJson.addProperty("DocDate", docDateNew) //todo current date will send here---
             postedJson.addProperty("DocDueDate", docDate)
             postedJson.addProperty("Series", series)
 

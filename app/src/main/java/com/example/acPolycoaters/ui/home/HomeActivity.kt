@@ -428,5 +428,4 @@ class HomeActivity : AppCompatActivity() {
             }
             .show()
     }
-
 }
