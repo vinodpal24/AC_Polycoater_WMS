@@ -38,5 +38,6 @@ object ApiConstant {
 
     /****** Branch  *****/ // added by Vinod Pal @21Apr,2025
     internal const val GET_ALL_BRANCHES = "GetBranchList"
+    internal const val GET_DB_LIST = "DBList"
 
 }

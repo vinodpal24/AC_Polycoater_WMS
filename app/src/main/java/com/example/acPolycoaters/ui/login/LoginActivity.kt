@@ -3,8 +3,6 @@ package com.example.acPolycoaters.ui.login
 import android.R
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
@@ -16,9 +14,12 @@ import com.example.acPolycoaters.Global_Classes.AppConstants.isTestEnvUIVisible
 import com.example.acPolycoaters.Global_Classes.GlobalMethods
 import com.example.acPolycoaters.Global_Classes.MaterialProgressDialog
 import com.example.acPolycoaters.Global_Notification.NetworkConnection
+import com.example.acPolycoaters.Model.DatabaseModel
 import com.example.acPolycoaters.ui.login.Model.LoginResponseModel
 import com.example.acPolycoaters.Model.OtpErrorModel
+import com.example.acPolycoaters.Retrofit_Api.ApiConstantForURL
 import com.example.acPolycoaters.Retrofit_Api.NetworkClients
+import com.example.acPolycoaters.Retrofit_Api.QuantityNetworkClient
 import com.example.acPolycoaters.SessionManagement.SessionManagement
 import com.example.acPolycoaters.Validation.Validation
 import com.example.acPolycoaters.databinding.ActivityLoginBinding
@@ -54,7 +55,8 @@ class LoginActivity : AppCompatActivity() {
         networkConnection = NetworkConnection()
         materialProgressDialog = MaterialProgressDialog(this@LoginActivity)
         sessionManagement = SessionManagement(this@LoginActivity)
-        setStaticDbName()
+        callDatabaseApi()
+        //setStaticDbName(dbResponse)
         activityLoginBinding.apply {
             switchForEnvironment.visibility = if (isTestEnvUIVisible) View.VISIBLE else View.GONE
 
@@ -108,8 +110,12 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    private fun setStaticDbName() {
-        val dbNames = arrayListOf("ACPL_LIVE_NEW", "TEST_03052025", "TEST_26062025", "TEST_18082025","TEST_ACPL_24092025","TEST_09102025")
+    private fun setStaticDbName(dbResponse: ArrayList<DatabaseModel.Value>?) {
+        //val dbNames = arrayListOf("ACPL_LIVE_NEW", "TEST_03052025", "TEST_26062025", "TEST_18082025","TEST_ACPL_24092025","TEST_09102025")
+        val dbNames: ArrayList<String> =
+            ArrayList(dbResponse?.map { it.dbname } ?: emptyList())
+
+
 
         val adapter = ArrayAdapter(
             this@LoginActivity,
@@ -127,6 +133,74 @@ class LoginActivity : AppCompatActivity() {
             activityLoginBinding.AcDbNameList.setText(selectedItem, false) // false to prevent filtering again
         }
     }
+
+    private fun callDatabaseApi(){
+        if (networkConnection.getConnectivityStatusBoolean(applicationContext)) {
+                materialProgressDialog.show()
+            var apiConfig = ApiConstantForURL()
+
+            QuantityNetworkClient.updateBaseUrlFromConfig(apiConfig, true)
+            val networkClient = QuantityNetworkClient.create(this)
+            networkClient.getDatabaseList().apply {
+                    enqueue(object : Callback<DatabaseModel> {
+                        override fun onResponse(
+                            call: Call<DatabaseModel>,
+                            response: Response<DatabaseModel>
+                        ) {
+                            try {
+                                if (response.isSuccessful) {
+                                    materialProgressDialog.dismiss()
+                                    var dbResponse = response.body()?.value
+                                    setStaticDbName(dbResponse)
+
+                                } else {
+                                    materialProgressDialog.dismiss()
+
+                                    val gson1 = GsonBuilder().create()
+                                    var mError: OtpErrorModel
+                                    try {
+                                        val s = response.errorBody()!!.string()
+                                        mError = gson1.fromJson(s, OtpErrorModel::class.java)
+                                        if (mError.error.code.equals(400)) {
+                                            GlobalMethods.showError(this@LoginActivity, mError.error.message.value)
+                                        }
+                                        if (mError.error.message.value != null) {
+                                            GlobalMethods.showError(this@LoginActivity, mError.error.message.value)
+                                            Log.e("json_error------", mError.error.message.value)
+                                        }
+                                    } catch (e: IOException) {
+                                        e.printStackTrace()
+                                    }
+                                }
+
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<DatabaseModel>, t: Throwable) {
+                            Log.e("login_api_failure-----", t.toString())
+                            materialProgressDialog.dismiss()
+                            Toast.makeText(this@LoginActivity, t.message, Toast.LENGTH_SHORT)
+                        }
+
+                    })
+                }
+
+
+
+        } else {
+            materialProgressDialog.dismiss()
+            AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Internet Connection Alert")
+                .setMessage("Please Check Your Internet Connection")
+                .setPositiveButton("Close") { dialogInterface, i ->
+                    finish()
+                }.show()
+        }
+    }
+
 
     private fun apiCall() {
         if (networkConnection.getConnectivityStatusBoolean(applicationContext)) {

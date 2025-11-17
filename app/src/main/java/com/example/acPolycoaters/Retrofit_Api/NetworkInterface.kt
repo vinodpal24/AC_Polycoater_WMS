@@ -51,6 +51,10 @@ interface NetworkInterface {
         @Query("DocNum") docNum: String
     ): Call<ProductionListModel>
 
+    // ADDED BY VINOD KUMAR PAL @17NOV,2025
+    @GET(ApiConstant.GET_DB_LIST)
+    fun getDatabaseList(): Call<DatabaseModel>
+
     //todo login API---
     @POST(ApiConstant.INVENTORY_GEN_EXITS)
     @Headers("Content-Type:application/json;charset=UTF-8")
