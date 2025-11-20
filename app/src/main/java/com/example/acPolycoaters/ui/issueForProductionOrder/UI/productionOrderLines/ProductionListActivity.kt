@@ -1,14 +1,21 @@
 package com.example.acPolycoaters.ui.issueForProductionOrder.UI.productionOrderLines
 
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.AbsListView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -21,6 +28,7 @@ import com.example.acPolycoaters.Global_Classes.GlobalMethods
 import com.example.acPolycoaters.Global_Classes.GlobalMethods.toPrettyJson
 import com.example.acPolycoaters.Global_Classes.GlobalMethods.toSimpleJson
 import com.example.acPolycoaters.Global_Classes.MaterialProgressDialog
+import com.example.acPolycoaters.Model.ModelFilterDialog
 import com.example.acPolycoaters.Model.OtpErrorModel
 import com.example.acPolycoaters.R
 import com.example.acPolycoaters.Retrofit_Api.ApiConstantForURL
@@ -28,6 +36,7 @@ import com.example.acPolycoaters.Retrofit_Api.NetworkClients
 import com.example.acPolycoaters.Retrofit_Api.QuantityNetworkClient
 import com.example.acPolycoaters.SessionManagement.SessionManagement
 import com.example.acPolycoaters.databinding.ActivityListProductionBinding
+import com.example.acPolycoaters.databinding.ShowFilterLayoutBinding
 import com.example.acPolycoaters.ui.DemoActivity
 import com.example.acPolycoaters.ui.deliveryOrderModule.Adapter.DeliveryListAdapter
 import com.example.acPolycoaters.ui.deliveryOrderModule.Model.DeliveryModel
@@ -53,6 +62,7 @@ import java.math.BigDecimal
 
 class ProductionListActivity : AppCompatActivity() {
     private lateinit var activityListBinding: ActivityListProductionBinding
+    private lateinit var dialogBinding: ShowFilterLayoutBinding
     private lateinit var issueOderAdapter: IssueOderAdapter
     private var productionListModel_gl: ArrayList<ProductionListModel.Value> = ArrayList()
     lateinit var materialProgressDialog: MaterialProgressDialog
@@ -60,6 +70,9 @@ class ProductionListActivity : AppCompatActivity() {
     private var deliveryModelList_gl: ArrayList<DeliveryModel.Value> = ArrayList()
     private lateinit var deliveryAdapter: DeliveryListAdapter
     private lateinit var sessionManagement: SessionManagement
+    private var filterModel = ModelFilterDialog()
+    private var dateFrom = ""
+    private var dateTo = ""
     private var isBack = false
     var apicall: Boolean = true
     var isScrollingpage: Boolean = false
@@ -434,6 +447,72 @@ class ProductionListActivity : AppCompatActivity() {
     }
 
 
+    @SuppressLint("NewApi")
+    private fun showFilterPopup() {
+
+        val dialog = Dialog(this@ProductionListActivity)
+        val layoutInflater = LayoutInflater.from(this@ProductionListActivity)
+        dialogBinding = ShowFilterLayoutBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+        /*val customDialog = layoutInflater.inflate(R.layout.show_filter_layout, null)
+        dialog.setContentView(customDialog)*/
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        dialog.window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT
+        )
+
+        dialogBinding.apply {
+
+            ivCrossIcon.setOnClickListener(View.OnClickListener {
+                dialog.dismiss()
+            })
+
+            edtFromDate.setOnClickListener {
+                GlobalMethods.disableFutureDates(this@ProductionListActivity, edtFromDate)
+            }
+
+            edtToDate.setOnClickListener {
+                GlobalMethods.enableAllCalenderDateSelect(this@ProductionListActivity, edtToDate)
+            }
+
+            edtFromDate.setText(filterModel.dateFrom.takeIf { it.isNotEmpty() }?.let { filterModel.dateFrom } ?: "")
+            edtToDate.setText(filterModel.dateTo.takeIf { it.isNotEmpty() }?.let { filterModel.dateTo } ?: "")
+
+
+            resetBtn.setOnClickListener {
+                edtFromDate.setText("")
+                edtToDate.setText("")
+                filterModel.clear()
+                //callWorkQueueList(pageno, SearchText, fromDate, toDate, "")
+                //loadDeliveryOrderListItems(page, null)
+            }
+
+            applyBtn.setOnClickListener {
+                dateFrom = edtFromDate.text.toString()
+                dateTo = edtToDate.text.toString()
+                filterModel.dateFrom = dateFrom
+                filterModel.dateTo = dateTo
+
+                dateFrom = dateFrom.takeIf { it.isNotEmpty() }
+                    ?.let { GlobalMethods.convert_dd_MM_yyyy_into_yyyy_MM_dd(it) }
+                    ?: ""
+
+                dateTo = dateTo.takeIf { it.isNotEmpty() }
+                    ?.let { GlobalMethods.convert_dd_MM_yyyy_into_yyyy_MM_dd(it) }
+                    ?: ""
+
+                //callWorkQueueList(pageno, SearchText, fromDate, toDate, "")
+                loadDeliveryOrderListItems(page, null)
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
+    }
+
+
     //todo DELIVERY ORDER API LIST ITEMS BIND....
     fun loadDeliveryOrderListItems(page: Int, docNum: String?) {
         Log.i("DocNum", "Page: $page,QueryDocNum: $docNum")
@@ -448,11 +527,55 @@ class ProductionListActivity : AppCompatActivity() {
                 val networkClient = NetworkClients.create(this)
                 val bplId = if (Prefs.getString(AppConstants.BPLID, "").isNotEmpty()) Prefs.getString(AppConstants.BPLID, "") else ""
                 Log.i("BRANCH", "BPLId: $bplId")
-                val filterQuery = if (docNum.isNullOrEmpty()) {
+                /* val filterQuery = if (docNum.isNullOrEmpty()) {
+                     "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId"
+                 } else {
+                     "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId and DocNum eq $docNum"
+                 }*/
+
+                /*val filterQuery = if (docNum.isNullOrEmpty()) {
                     "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId"
                 } else {
-                    "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId and DocNum eq $docNum"
+                    "DocumentStatus eq 'bost_Open' and BPL_IDAssignedToInvoice eq $bplId" +
+                            "and DocNum eq $docNum " +
+                            "and DocDate ge '$dateFrom' and DocDate le '$dateTo'"
+                }*/
+
+                val filters = mutableListOf<String>()
+
+                filters.add("DocumentStatus eq 'bost_Open'")
+                filters.add("BPL_IDAssignedToInvoice eq $bplId")
+
+                // Add DocNum only if present
+                if (!docNum.isNullOrEmpty()) {
+                    filters.add("DocNum eq $docNum")
                 }
+
+                // Handle date filters
+                when {
+                    // Only dateFrom given
+                    !dateFrom.isNullOrEmpty() && dateTo.isNullOrEmpty() -> {
+                        filters.add("DocDate ge '$dateFrom'")
+                        filters.add("DocDate le '$dateFrom'")
+                    }
+
+                    // Only dateTo given
+                    dateFrom.isNullOrEmpty() && !dateTo.isNullOrEmpty() -> {
+                        filters.add("DocDate ge '$dateTo'")
+                        filters.add("DocDate le '$dateTo'")
+                    }
+
+                    // Both dates given
+                    !dateFrom.isNullOrEmpty() && !dateTo.isNullOrEmpty() -> {
+                        filters.add("DocDate ge '$dateFrom'")
+                        filters.add("DocDate le '$dateTo'")
+                    }
+                }
+
+                // Final query
+                val filterQuery = filters.joinToString(" and ")
+
+                Log.i("ORDER_QUERY", "Filter Query: $filterQuery")
                 networkClient.deliveryOrder(
                     filterQuery,
                     "DocNum desc",
@@ -471,7 +594,7 @@ class ProductionListActivity : AppCompatActivity() {
                                     val newItems = response.body()!!.value
 
                                     runOnUiThread {
-                                        if (!docNum.isNullOrEmpty()) {
+                                        if (!docNum.isNullOrEmpty() || (!dateFrom.isNullOrEmpty() && !dateTo.isNullOrEmpty()) || (dateFrom.isNullOrEmpty() && dateTo.isNullOrEmpty())) {
                                             // Search mode
                                             deliveryModelList_gl.clear()
                                             deliveryModelList_gl.addAll(newItems)
@@ -494,71 +617,9 @@ class ProductionListActivity : AppCompatActivity() {
                                             deliveryAdapter.notifyDataSetChanged()
                                         }
                                     }
-                                }
-                                else {
+                                } else {
                                     handleErrorResponse(response)
                                 }
-
-
-                                /*if (response.isSuccessful) {
-                                val listResponse = response.body()!!
-
-                                val newItems = listResponse.value
-
-                                if (newItems.isNotEmpty()) {
-                                    activityListBinding.ivNoDataFound.visibility = View.GONE
-                                    activityListBinding.rvProductionList.visibility = View.VISIBLE
-                                } else {
-                                    activityListBinding.ivNoDataFound.visibility = View.VISIBLE
-                                    activityListBinding.rvProductionList.visibility = View.GONE
-                                }
-
-                                // Filter out duplicates by DocEntry
-                                val uniqueItems = newItems.filter { newItem ->
-                                    deliveryModelList_gl.none { existing -> existing.DocEntry == newItem.DocEntry }
-                                }
-
-                                if (uniqueItems.isNotEmpty()) {
-
-                                    val startPos = deliveryModelList_gl.size
-                                    deliveryModelList_gl.addAll(uniqueItems)
-                                    Log.i("DELIVERY_ORDER", "Delivery Order List size : ${deliveryModelList_gl.size}")
-                                    deliveryAdapter.notifyItemRangeInserted(startPos, uniqueItems.size)
-                                } else {
-                                    isLastPage = true // no unique items left
-                                }
-                                isLastPage = false
-                            } else {
-                                isLastPage = true
-                                //handleErrorResponse(response)
-                                materialProgressDialog.dismiss()
-                                val gson1 = GsonBuilder().create()
-                                var mError: OtpErrorModel
-                                try {
-                                    val s = response.errorBody()!!.string()
-                                    mError = gson1.fromJson(s, OtpErrorModel::class.java)
-                                    if (mError.error.code == 400) {
-                                        GlobalMethods.showError(
-                                            this@ProductionListActivity,
-                                            mError.error.message.value
-                                        )
-                                    }
-                                    if (mError.error.code == 306 && mError.error.message.value != null) {
-                                        GlobalMethods.showError(
-                                            this@ProductionListActivity,
-                                            mError.error.message.value
-                                        )
-                                        val mainIntent = Intent(
-                                            this@ProductionListActivity,
-                                            LoginActivity::class.java
-                                        )
-                                        startActivity(mainIntent)
-                                        finish()
-                                    }
-                                } catch (e: IOException) {
-                                    e.printStackTrace()
-                                }
-                            }*/
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             } finally {
@@ -638,10 +699,9 @@ class ProductionListActivity : AppCompatActivity() {
                 return true
             }
 
-            R.id.list_icon -> {
+            R.id.filterByDate -> {
                 //todo Handle icon click
-                var intent = Intent(this@ProductionListActivity, DemoActivity::class.java)
-                startActivity(intent)
+                showFilterPopup()
                 return true
             }
 

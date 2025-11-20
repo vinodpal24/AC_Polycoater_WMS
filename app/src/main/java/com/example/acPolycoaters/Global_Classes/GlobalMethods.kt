@@ -65,6 +65,57 @@ object GlobalMethods {
         return formattedDate
     }
 
+    open fun disableFutureDates(context: Context, editText: EditText) {
+        val c = Calendar.getInstance()
+        val mYear = c.get(Calendar.YEAR)
+        val mMonth = c.get(Calendar.MONTH)
+        val mDay = c.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(context,
+            DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
+                val s = "$dayOfMonth-${monthOfYear + 1}-$year"
+                val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                try {
+                    val strDate = dateFormatter.parse(s)
+                    editText.setText(dateFormatter.format(strDate))
+                } catch (e: ParseException) {
+                    e.printStackTrace()
+                }
+            }, mYear, mMonth, mDay
+        )
+
+        datePickerDialog.datePicker.maxDate = System.currentTimeMillis() - 1000
+        datePickerDialog.setMessage(editText.hint.toString())
+        datePickerDialog.show()
+    }
+
+    fun enableAllCalenderDateSelect(context: Context, textView: EditText) {
+        val c = Calendar.getInstance()
+        val mYear = c.get(Calendar.YEAR)
+        val mMonth = c.get(Calendar.MONTH)
+        val mDay = c.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(
+            context, DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+                /* val selectedDate = "$year-${monthOfYear + 1}-$dayOfMonth"
+                 val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)*/
+                val selectedDate = "$dayOfMonth-${monthOfYear + 1}-$year"
+                val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                try {
+                    val strDate = dateFormatter.parse(selectedDate)
+                    textView.setText(dateFormatter.format(strDate))
+                } catch (e: ParseException) {
+                    e.printStackTrace()
+                }
+            }, mYear, mMonth, mDay
+        )
+
+        datePickerDialog.datePicker // setMinDate(System.currentTimeMillis() - 1000)
+        datePickerDialog.setMessage(textView.hint.toString())
+        datePickerDialog.show()
+
+    }
+
     fun disablePastDates(context: Context, editText: EditText, isPastDateDisable: Boolean = false) {
         val c = Calendar.getInstance()
         val mYear = c.get(Calendar.YEAR)
@@ -124,6 +175,14 @@ object GlobalMethods {
     fun convert_dd_MM_yyyy_into_yyyy_MM_dd(inputDate: String): String {
         val inputFormat = SimpleDateFormat("dd-MM-yyyy")
         val outputFormat = SimpleDateFormat("yyyy-MM-dd")
+
+        val date = inputFormat.parse(inputDate)
+        return outputFormat.format(date)
+    }
+
+    fun convert_yyyy_MM_dd_into_dd_MM_yyyy(inputDate: String): String {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd")
+        val outputFormat =SimpleDateFormat("dd-MM-yyyy")
 
         val date = inputFormat.parse(inputDate)
         return outputFormat.format(date)

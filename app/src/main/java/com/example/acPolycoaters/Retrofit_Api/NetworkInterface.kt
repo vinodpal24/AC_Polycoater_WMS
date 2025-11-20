@@ -81,8 +81,8 @@ interface NetworkInterface {
         @Query("$" + "orderby") orderby: String,*/
         @Query("\$filter") filter: String,
         @Query("\$orderby") orderby: String,
-        @Query("\$skip") skip: Int,
-        @Query("\$top") top: Int
+        @Query("\$skip") skip: Int?,
+        @Query("\$top") top: Int?
     ): Call<DeliveryModel>
 
     //todo post delivery order items...
